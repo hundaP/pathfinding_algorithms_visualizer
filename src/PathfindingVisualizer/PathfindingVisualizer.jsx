@@ -6,10 +6,10 @@ import { dijkstra, getNodesInShortestPathOrder } from '../Algorithms/dijkstra';
 import { astar } from '../Algorithms/astar';
 
 
-const START_NODE_ROW = 0;
-const START_NODE_COL = 0;
-const END_NODE_ROW = 19;
-const END_NODE_COL = 19;
+const START_NODE_ROW = 5;
+const START_NODE_COL = 8;
+const END_NODE_ROW = 29;
+const END_NODE_COL = 69;
 
 
 export default class PathfindingVisualizer extends Component {
@@ -80,7 +80,7 @@ export default class PathfindingVisualizer extends Component {
     // A* algorithm
     animateAStar(visitedNodesInOrder, nodesInShortestPathOrder) {
         for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === nodesInShortestPathOrder.length) {
+            if (i === visitedNodesInOrder.length) {
                 setTimeout(() => {
                     this.animateShortestPath(nodesInShortestPathOrder);
                 }, 10 * i);
@@ -103,6 +103,31 @@ export default class PathfindingVisualizer extends Component {
         this.animateAStar(visitedNodesInOrder, nodesInShortestPathOrder);
     }
 
+    clearGrid() {
+        const { grid } = this.state;
+        const newGrid = grid.map(row =>
+            row.map(node => {
+                const newNode = {
+                    ...node,
+                    distance: Infinity,
+                    isVisited: false,
+                    previousNode: null,
+                };
+    
+                // Reset the CSS classes
+                const element = document.getElementById(`node-${node.row}-${node.col}`);
+                if (element) {
+                    element.className = `node ${newNode.isStart ? 'node-start' : ''} ${newNode.isEnd ? 'node-end' : ''} ${newNode.isWall ? 'node-wall' : ''}`;
+                }
+    
+                return newNode;
+            })
+        );
+        this.setState({ grid: newGrid });
+    }
+    
+
+
     render() {
         const { grid, mouseIsPressed } = this.state;
         console.log(grid);
@@ -116,6 +141,9 @@ export default class PathfindingVisualizer extends Component {
                 </button>
                 <button onClick={() => this.visualizeAStar()}>
                     A* Algorithm
+                </button>
+                <button onClick={() => this.clearGrid()}>
+                    Clear Grid
                 </button>
                 <div className="grid">
                     {grid.map((row, rowIndex) => {
@@ -149,9 +177,9 @@ export default class PathfindingVisualizer extends Component {
 
 const getInitialGrid = () => {
     const grid = [];
-    for (let row = 0; row < 20; row++) {
+    for (let row = 0; row < 40; row++) {
         const currentRow = [];
-        for (let col = 0; col < 20; col++) {
+        for (let col = 0; col < 80; col++) {
             currentRow.push(createNode(col, row));
         }
         grid.push(currentRow);

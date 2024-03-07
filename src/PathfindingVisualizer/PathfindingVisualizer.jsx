@@ -5,12 +5,7 @@ import './PathfindingVisualizer.css'
 import { dijkstra, getNodesInShortestPathOrder } from '../Algorithms/dijkstra';
 import { astar } from '../Algorithms/astar';
 
-
-const START_NODE_ROW = 5;
-const START_NODE_COL = 8;
-const END_NODE_ROW = 29;
-const END_NODE_COL = 69;
-
+import { generateMaze } from '../Algorithms/mazeGenerator';
 
 export default class PathfindingVisualizer extends Component {
 
@@ -23,8 +18,8 @@ export default class PathfindingVisualizer extends Component {
     }
 
     componentDidMount() {
-        const grid = getInitialGrid();
-        this.setState({ grid });
+        const { grid, startNode, endNode } = getInitialGrid();
+        this.setState({ grid, startNode, endNode });
     }
 
     handleMouseDown(row, col) {
@@ -68,9 +63,7 @@ export default class PathfindingVisualizer extends Component {
         }
     }
     visualizeDijkstra() {
-        const { grid } = this.state;
-        const startNode = grid[START_NODE_ROW][START_NODE_COL];
-        const endNode = grid[END_NODE_ROW][END_NODE_COL];
+        const { grid, startNode, endNode } = this.state;
 
         const visitedNodesInOrder = dijkstra(grid, startNode, endNode);
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(endNode);
@@ -94,9 +87,7 @@ export default class PathfindingVisualizer extends Component {
     }
 
     visualizeAStar() {
-        const { grid } = this.state;
-        const startNode = grid[START_NODE_ROW][START_NODE_COL];
-        const endNode = grid[END_NODE_ROW][END_NODE_COL];
+        const { grid, startNode, endNode } = this.state;
 
         const visitedNodesInOrder = astar(grid, startNode, endNode);
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(endNode);
@@ -104,7 +95,7 @@ export default class PathfindingVisualizer extends Component {
     }
 
     clearGrid() {
-        const { grid } = this.state;
+        const { grid, startNode, endNode} = this.state;
         const newGrid = grid.map(row =>
             row.map(node => {
                 const newNode = {
@@ -113,6 +104,18 @@ export default class PathfindingVisualizer extends Component {
                     isVisited: false,
                     previousNode: null,
                 };
+    
+                // If the node is a start or end node, reset its isVisited property and preserve its special status
+                if (node.isStart || node.isEnd) {
+                    newNode.isVisited = false;
+                    newNode.isStart = node.isStart;
+                    newNode.isEnd = node.isEnd;
+                }
+    
+                // If the node is a wall, preserve its status
+                if (node.isWall) {
+                    newNode.isWall = true;
+                }
     
                 // Reset the CSS classes
                 const element = document.getElementById(`node-${node.row}-${node.col}`);
@@ -123,9 +126,19 @@ export default class PathfindingVisualizer extends Component {
                 return newNode;
             })
         );
-        this.setState({ grid: newGrid });
+        this.setState({newGrid, startNode, endNode, visitedNodesInOrder: [], nodesInShortestPathOrder: []});
     }
-    
+
+    generateNewMaze() {
+        const { grid, startNode, endNode } = generateMaze(40, 80);
+        this.setState({
+            grid,
+            START_NODE_ROW: startNode.row,
+            START_NODE_COL: startNode.col,
+            END_NODE_ROW: endNode.row,
+            END_NODE_COL: endNode.col
+        });
+    }
 
 
     render() {
@@ -133,7 +146,7 @@ export default class PathfindingVisualizer extends Component {
         console.log(grid);
         return (
             <>
-                <button onClick={() => this.generateMaze(this.state.grid)}>
+                <button onClick={() => this.generateNewMaze()}>
                     Generate Maze
                 </button>
                 <button onClick={() => this.visualizeDijkstra()}>
@@ -176,6 +189,22 @@ export default class PathfindingVisualizer extends Component {
 }
 
 const getInitialGrid = () => {
+    return generateMaze(40, 80);
+};
+
+
+const getNewGridWithWallToggled = (grid, row, col) => {
+    const newGrid = grid.slice();
+    const node = newGrid[row][col];
+    const newNode = {
+        ...node,
+        isWall: !node.isWall,
+    };
+    newGrid[row][col] = newNode;
+    return newGrid;
+};
+
+/*const getInitialGrid = () => {
     const grid = [];
     for (let row = 0; row < 40; row++) {
         const currentRow = [];
@@ -209,6 +238,8 @@ const getNewGridWithWallToggled = (grid, row, col) => {
     };
     newGrid[row][col] = newNode;
     return newGrid;
-};
+};*/
+
+
 
 

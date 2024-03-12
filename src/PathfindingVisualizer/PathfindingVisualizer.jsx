@@ -59,7 +59,7 @@ export default class PathfindingVisualizer extends Component {
             setTimeout(() => {
                 const node = nodesInShortestPathOrder[i];
                 document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-shortest-path';
-            }, 50 * i);
+            }, 10 * i);
         }
     }
     visualizeDijkstra() {
@@ -189,7 +189,7 @@ export default class PathfindingVisualizer extends Component {
 }
 
 const getInitialGrid = () => {
-    return generateMaze(40, 80);
+    return generateMaze(100, 40);
 };
 
 
@@ -204,41 +204,6 @@ const getNewGridWithWallToggled = (grid, row, col) => {
     return newGrid;
 };
 
-/*const getInitialGrid = () => {
-    const grid = [];
-    for (let row = 0; row < 40; row++) {
-        const currentRow = [];
-        for (let col = 0; col < 80; col++) {
-            currentRow.push(createNode(col, row));
-        }
-        grid.push(currentRow);
-    }
-    return grid;
-};
-
-const createNode = (col, row) => {
-    return {
-        col,
-        row,
-        isStart: row === START_NODE_ROW && col === START_NODE_COL,
-        isEnd: row === END_NODE_ROW && col === END_NODE_COL,
-        distance: Infinity,
-        isVisited: false,
-        isWall: false,
-        previousNode: null,
-    };
-};
-
-const getNewGridWithWallToggled = (grid, row, col) => {
-    const newGrid = grid.slice();
-    const node = newGrid[row][col];
-    const newNode = {
-        ...node,
-        isWall: !node.isWall,
-    };
-    newGrid[row][col] = newNode;
-    return newGrid;
-};*/
 
 
 

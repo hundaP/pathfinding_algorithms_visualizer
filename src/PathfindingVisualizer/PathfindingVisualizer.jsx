@@ -45,13 +45,13 @@ export default class PathfindingVisualizer extends Component {
             if (i === visitedNodesInOrder.length) {
                 setTimeout(() => {
                     this.animateShortestPath(nodesInShortestPathOrder);
-                }, 10 * i);
+                }, 5 * i);
                 return;
             }
             setTimeout(() => {
                 const node = visitedNodesInOrder[i];
                 document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 10 * i);
+            }, 5 * i);
         }
     }
     animateShortestPath(nodesInShortestPathOrder) {
@@ -59,7 +59,7 @@ export default class PathfindingVisualizer extends Component {
             setTimeout(() => {
                 const node = nodesInShortestPathOrder[i];
                 document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-shortest-path';
-            }, 10 * i);
+            }, 3 * i);
         }
     }
     visualizeDijkstra() {
@@ -76,13 +76,13 @@ export default class PathfindingVisualizer extends Component {
             if (i === visitedNodesInOrder.length) {
                 setTimeout(() => {
                     this.animateShortestPath(nodesInShortestPathOrder);
-                }, 10 * i);
+                }, 5 * i);
                 return;
             }
             setTimeout(() => {
                 const node = visitedNodesInOrder[i];
                 document.getElementById(`node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 10 * i);
+            }, 5 * i);
         }
     }
 
@@ -130,7 +130,7 @@ export default class PathfindingVisualizer extends Component {
     }
 
     generateNewMaze() {
-        const { grid, startNode, endNode } = generateMaze(40, 80);
+        const { grid, startNode, endNode } = generateMaze(100, 40);
         this.setState({
             grid,
             START_NODE_ROW: startNode.row,
@@ -146,7 +146,10 @@ export default class PathfindingVisualizer extends Component {
         console.log(grid);
         return (
             <>
-                <button onClick={() => this.generateNewMaze()}>
+                <button onClick={() => {
+                    this.clearGrid();
+                    this.generateNewMaze()
+                }}>
                     Generate Maze
                 </button>
                 <button onClick={() => this.visualizeDijkstra()}>

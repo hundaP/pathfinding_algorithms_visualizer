@@ -37,41 +37,62 @@ export class Cell {
   
     getNeighbors(cell) {
         let neighbors = [];
-
+      
+        // Get the cells above, below, to the left, and to the right of the given cell
         let top = this.getCell(cell.x, cell.y - 2);
         let right = this.getCell(cell.x + 2, cell.y);
         let bottom = this.getCell(cell.x, cell.y + 2);
         let left = this.getCell(cell.x - 2, cell.y);
-    
+      
+        // If a cell is within the grid and has not been visited yet, add it to the list of neighbors
         if (top && !top.visited) neighbors.push(top);
         if (right && !right.visited) neighbors.push(right);
         if (bottom && !bottom.visited) neighbors.push(bottom);
         if (left && !left.visited) neighbors.push(left);
-    
+      
         if (neighbors.length > 0) {
-          return neighbors[Math.floor(Math.random() * neighbors.length)];
+          // 75% chance to return a random neighbor
+          if (Math.random() < 0.75) {
+            return neighbors[Math.floor(Math.random() * neighbors.length)];
+          }
+      
+          // Otherwise, sort the neighbors based on their distance from the start point
+          neighbors.sort((a, b) => {
+            let aDistance = Math.hypot(a.x - this.start.x, a.y - this.start.y);
+            let bDistance = Math.hypot(b.x - this.start.x, b.y - this.start.y);
+            return bDistance - aDistance;
+          });
+      
+          // Return the neighbor that is furthest from the start point
+          return neighbors[0];
         } else {
           return undefined;
         }
-    }
+      }
   
-    generateMaze() {
+      generateMaze() {
         this.currentCell.visited = true;
         let nextCell = this.getNeighbors(this.currentCell);
-    
+      
         if (nextCell) {
           nextCell.visited = true;
-    
+      
           this.stack.push(this.currentCell);
-    
+      
           // Remove the wall between the current cell and the next cell
           let wallX = (this.currentCell.x + nextCell.x) / 2;
           let wallY = (this.currentCell.y + nextCell.y) / 2;
           this.grid[wallY][wallX].isWall = false;
-    
+      
           this.currentCell = nextCell;
         } else if (this.stack.length > 0) {
-          this.currentCell = this.stack.pop();
+          // 20% chance to backtrack and carve a new path
+          if (Math.random() < 0.2) {
+            let backtrackCell = this.stack[Math.floor(Math.random() * this.stack.length)];
+            this.currentCell = backtrackCell;
+          } else {
+            this.currentCell = this.stack.pop();
+          }
         }
       }
   }

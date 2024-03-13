@@ -1,5 +1,6 @@
 .grid-container{
     display: flex;
+    justify-content: space-around;
 }
 .grid{
     margin: 100px 20px 0;
@@ -7,6 +8,6 @@
 .grid > div{
     margin-top: -10px;
 }
-h1{
+h1, p{
     color: white;
 }

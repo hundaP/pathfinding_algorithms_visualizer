@@ -18,7 +18,6 @@ export default class PathfindingVisualizer extends Component {
             gridAstar: [],
             startNode: null,
             endNode: null,
-            mouseIsPressed: false,
         };
     }
 
@@ -32,19 +31,6 @@ export default class PathfindingVisualizer extends Component {
             gridAstarStartNode,
             gridAstarEndNode
         });
-    }
-
-    handleMouseDown(row, col) {
-        const newGrid = getNewGridWithWallToggled(this.state.gridDijkstra, this.state.gridAstar, row, col);
-        this.setState({ gridDijkstra: newGrid, gridAstar: newGrid, mouseIsPressed: true });
-    }
-    handleMouseEnter(row, col) {
-        if (!this.state.mouseIsPressed) return;
-        const newGrid = getNewGridWithWallToggled(this.state.gridDijkstra, this.state.gridAstar, row, col);
-        this.setState({ gridDijkstra: newGrid, gridAstar: newGrid });
-    }
-    handleMouseUp() {
-        this.setState({ mouseIsPressed: false });
     }
 
     /*
@@ -79,8 +65,18 @@ export default class PathfindingVisualizer extends Component {
 
     visualizeDijkstra() {
         const { gridDijkstra, gridDijkstraStartNode, gridDijkstraEndNode } = this.state;
+        const startTime = performance.now();
         const visitedNodesInOrder = dijkstra(gridDijkstra, gridDijkstraStartNode, gridDijkstraEndNode);
+        const endTime = performance.now();
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridDijkstraEndNode);
+        const totalNodes = gridDijkstra.length * gridDijkstra[0].length;
+        const wallNodes = gridDijkstra.flat().filter(node => node.isWall).length;
+        const nonWallNodes = totalNodes - wallNodes;
+        this.setState({
+            dijkstraTime: endTime - startTime,
+            dijkstraVisitedNodes: visitedNodesInOrder.length,
+            dijkstraVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+        });
         this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
     }
 
@@ -102,8 +98,18 @@ export default class PathfindingVisualizer extends Component {
 
     visualizeAStar() {
         const { gridAstar, gridAstarStartNode, gridAstarEndNode } = this.state;
+        const startTime = performance.now();
         const visitedNodesInOrder = astar(gridAstar, gridAstarStartNode, gridAstarEndNode);
+        const endTime = performance.now();
         const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridAstarEndNode);
+        const totalNodes = gridAstar.length * gridAstar[0].length;
+        const wallNodes = gridAstar.flat().filter(node => node.isWall).length;
+        const nonWallNodes = totalNodes - wallNodes;
+        this.setState({
+            aStarTime: endTime - startTime,
+            aStarVisitedNodes: visitedNodesInOrder.length,
+            aStarVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+        });
         this.animateAStar(visitedNodesInOrder, nodesInShortestPathOrder);
     }
 
@@ -113,7 +119,7 @@ export default class PathfindingVisualizer extends Component {
     }
 
     render() {
-        const { gridDijkstra, gridAstar, mouseIsPressed } = this.state;
+        const { gridDijkstra, gridAstar } = this.state;
         if (!gridDijkstra || !gridAstar) {
             return <div>Loading...</div>; // Or some other placeholder
         }
@@ -127,7 +133,10 @@ export default class PathfindingVisualizer extends Component {
                 </button>
                 <div className='grid-container'>
                     <div className="grid">
-                        <h1>Dijkstra</h1>
+                        <h1>Dijkstra's Algorithm</h1>
+                        <p>Execution Time: {typeof this.state.dijkstraTime === 'number' ? this.state.dijkstraTime.toFixed(2) : 'N/A'} ms</p>
+                        <p>Visited Cells: {this.state.dijkstraVisitedNodes}</p>
+                        <p>Visited Percentage: {typeof this.state.dijkstraVisitedPercentage === 'number' ? this.state.dijkstraVisitedPercentage.toFixed(2) : 'N/A'}%</p>
                         {gridDijkstra.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -140,10 +149,6 @@ export default class PathfindingVisualizer extends Component {
                                                 isEnd={isEnd}
                                                 isStart={isStart}
                                                 isWall={isWall}
-                                                mouseIsPressed={mouseIsPressed}
-                                                onMouseDown={(row, col) => this.handleMouseDown(row, col)}
-                                                onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
-                                                onMouseUp={() => this.handleMouseUp()}
                                                 row={row}
                                                 gridId={gridId}></Node>
                                         );
@@ -153,7 +158,10 @@ export default class PathfindingVisualizer extends Component {
                         })}
                     </div>
                     <div className="grid">
-                        <h1>A*</h1>
+                        <h1>A* Algorithm</h1>
+                        <p>Execution Time: {typeof this.state.aStarTime === 'number' ? this.state.aStarTime.toFixed(2) : 'N/A'} ms</p>
+                        <p>Visited Cells: {this.state.aStarVisitedNodes}</p>
+                        <p>Visited Percentage: {typeof this.state.aStarVisitedPercentage === 'number' ? this.state.aStarVisitedPercentage.toFixed(2) : 'N/A'}%</p>
                         {gridAstar.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -166,10 +174,6 @@ export default class PathfindingVisualizer extends Component {
                                                 isEnd={isEnd}
                                                 isStart={isStart}
                                                 isWall={isWall}
-                                                mouseIsPressed={mouseIsPressed}
-                                                onMouseDown={(row, col) => this.handleMouseDown(row, col)}
-                                                onMouseEnter={(row, col) => this.handleMouseEnter(row, col)}
-                                                onMouseUp={() => this.handleMouseUp()}
                                                 row={row}
                                                 gridId={gridId}></Node>
                                         );
@@ -198,23 +202,7 @@ const getInitialGrid = (numOfRows, numOfCols) => {
 };
 
 
-const getNewGridWithWallToggled = (gridDijkstra, gridAstar, row, col) => {
-    const newGridDijkstra = gridDijkstra.slice();
-    const newGridAstar = gridAstar.slice();
-    const nodeDijkstra = newGridDijkstra[row][col];
-    const nodeAstar = newGridAstar[row][col];
-    const newNodeDijkstra = {
-        ...nodeDijkstra,
-        isWall: !nodeDijkstra.isWall,
-    };
-    const newNodeAstar = {
-        ...nodeAstar,
-        isWall: !nodeAstar.isWall,
-    };
-    newGridDijkstra[row][col] = newNodeDijkstra;
-    newGridAstar[row][col] = newNodeAstar;
-    return { gridDijkstra: newGridDijkstra, gridAstar: newGridAstar };
-};
+
 
 
 

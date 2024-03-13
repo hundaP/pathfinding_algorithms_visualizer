@@ -1,6 +1,12 @@
+.grid-container{
+    display: flex;
+}
 .grid{
-    margin: 100px 0 0;
+    margin: 100px 20px 0;
 }
 .grid > div{
     margin-top: -10px;
+}
+h1{
+    color: white;
 }

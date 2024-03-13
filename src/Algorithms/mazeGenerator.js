@@ -106,16 +106,26 @@ export class Cell {
     }
   
     // Convert the maze grid to the format expected by the rest of your application
-    let grid = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end)));
+    let grid1 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 1)));
+    let grid2 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 2)));
   
-    return {
-      grid: grid,
-      startNode: grid[maze.start.y][maze.start.x],
-      endNode: grid[maze.end.y][maze.end.x],
+    // Find start and end nodes
+    let gridDijkstraStartNode = grid1[maze.start.y][maze.start.x];
+    let gridDijkstraEndNode = grid1[maze.end.y][maze.end.x];
+    let gridAstarStartNode = grid2[maze.start.y][maze.start.x];
+    let gridAstarEndNode = grid2[maze.end.y][maze.end.x];
+
+    return { 
+        gridDijsktra: grid1, 
+        gridAstar: grid2,
+        gridDijkstraStartNode,
+        gridDijkstraEndNode,
+        gridAstarStartNode,
+        gridAstarEndNode
     };
-  }
+}
   
-  function createNode(col, row, isWall, startNode, endNode) {
+  function createNode(col, row, isWall, startNode, endNode, gridId) {
     return {
       col,
       row,
@@ -125,5 +135,6 @@ export class Cell {
       isVisited: false,
       isWall,
       previousNode: null,
+      gridId
     };
   }

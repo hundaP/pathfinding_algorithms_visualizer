@@ -7,7 +7,7 @@ import { astar } from '../Algorithms/astar';
 import { bfs } from '../Algorithms/bfs';
 import { dfs } from '../Algorithms/dfs';
 import { wallFollower } from '../Algorithms/wall_follower';
-
+import { runTest } from '../Algorithms/testRunner';
 import { generateMaze } from '../Algorithms/mazeGenerator';
 
 import Switch from '@material-ui/core/Switch';
@@ -58,9 +58,6 @@ export default class PathfindingVisualizer extends Component {
     generateNewMaze() {
 
         const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
-
-
-
 
         this.setState({
             gridDijkstra,
@@ -172,7 +169,7 @@ export default class PathfindingVisualizer extends Component {
             aStarVisitedNodes: visitedNodesInOrder.length,
             aStarVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
             pathLengthAStar: nodesInShortestPathOrder.length
-            
+
         });
         this.animateAStar(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -300,6 +297,11 @@ export default class PathfindingVisualizer extends Component {
                     color="primary"
                 />
                 <label>Single Path</label>
+                <input type="number" id="numMazes" min="1" defaultValue="100" />
+                <button onClick={() => {
+                    const numMazes = document.getElementById('numMazes').value;
+                    runTest(numMazes);
+                }}>Run Test</button>
                 <div className='grid-container'>
                     <div className="grid">
                         <h1>Dijkstra's Algorithm</h1>

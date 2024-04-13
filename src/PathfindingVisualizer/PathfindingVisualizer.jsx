@@ -136,7 +136,8 @@ export default class PathfindingVisualizer extends Component {
         this.setState({
             dijkstraTime: endTime - startTime,
             dijkstraVisitedNodes: visitedNodesInOrder.length,
-            dijkstraVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+            dijkstraVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            pathLengthDijkstra: nodesInShortestPathOrder.length
         });
         this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -169,7 +170,9 @@ export default class PathfindingVisualizer extends Component {
         this.setState({
             aStarTime: endTime - startTime,
             aStarVisitedNodes: visitedNodesInOrder.length,
-            aStarVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+            aStarVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            pathLengthAStar: nodesInShortestPathOrder.length
+            
         });
         this.animateAStar(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -201,7 +204,8 @@ export default class PathfindingVisualizer extends Component {
         this.setState({
             BFSTime: endTime - startTime,
             BFSVisitedNodes: visitedNodesInOrder.length,
-            BFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+            BFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            pathLengthBFS: nodesInShortestPathOrder.length
         });
         this.animateBFS(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -233,7 +237,8 @@ export default class PathfindingVisualizer extends Component {
         this.setState({
             DFSTime: endTime - startTime,
             DFSVisitedNodes: visitedNodesInOrder.length,
-            DFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+            DFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            pathLengthDFS: nodesInShortestPathOrder.length
         });
         this.animateDFS(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -266,7 +271,8 @@ export default class PathfindingVisualizer extends Component {
         this.setState({
             wallFollowerTime: endTime - startTime,
             wallFollowerVisitedNodes: visitedNodesInOrder.length,
-            wallFollowerVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+            wallFollowerVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            pathLengthWallFollower: nodesInShortestPathOrder.length
         });
         this.animateWallFollower(visitedNodesInOrder, nodesInShortestPathOrder);
     }
@@ -300,6 +306,7 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.dijkstraTime === 'number' ? this.state.dijkstraTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.dijkstraVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.dijkstraVisitedPercentage === 'number' ? this.state.dijkstraVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        <p>Dijkstra's Algorithm Path Length: {this.state.pathLengthDijkstra}</p>
                         {gridDijkstra.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -325,6 +332,7 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.aStarTime === 'number' ? this.state.aStarTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.aStarVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.aStarVisitedPercentage === 'number' ? this.state.aStarVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        <p>A* Algorithm Path Length: {this.state.pathLengthAStar}</p>
                         {gridAstar.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -352,6 +360,7 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.BFSTime === 'number' ? this.state.BFSTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.BFSVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.BFSVisitedPercentage === 'number' ? this.state.BFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        <p>BFS Algorithm Path Length: {this.state.pathLengthBFS}</p>
                         {Array.isArray(gridBFS) && gridBFS.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -377,6 +386,7 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.DFSTime === 'number' ? this.state.DFSTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.DFSVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.DFSVisitedPercentage === 'number' ? this.state.DFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        <p>DFS Algorithm Path Length: {this.state.pathLengthDFS}</p>
                         {Array.isArray(gridDFS) && gridDFS.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
@@ -404,6 +414,7 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.wallFollowerTime === 'number' ? this.state.wallFollowerTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.wallFollowerVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.wallFollowerVisitedPercentage === 'number' ? this.state.wallFollowerVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        <p>Wall Follower Algorithm Path Length: {this.state.pathLengthWallFollower}</p>
                         {Array.isArray(gridWallFollower) && gridWallFollower.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>

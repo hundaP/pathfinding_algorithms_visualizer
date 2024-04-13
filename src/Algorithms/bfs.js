@@ -14,6 +14,7 @@ export function bfs(grid, startNode, endNode) {
         for (const neighbor of unvisitedNeighbors) {
             neighbor.distance = currentNode.distance + 1;
             neighbor.previousNode = currentNode;
+            neighbor.isVisited = true;  // Mark as visited here
             queue.push(neighbor);
         }
     }

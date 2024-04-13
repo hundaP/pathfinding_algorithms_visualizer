@@ -10,6 +10,8 @@ import { wallFollower } from '../Algorithms/wall_follower';
 
 import { generateMaze } from '../Algorithms/mazeGenerator';
 
+import Switch from '@material-ui/core/Switch';
+
 export default class PathfindingVisualizer extends Component {
     NUM_OF_ROWS = 25;
     NUM_OF_COLS = 25;
@@ -24,11 +26,12 @@ export default class PathfindingVisualizer extends Component {
             gridWallFollower: [],
             startNode: null,
             endNode: null,
+            singlePath: true
         };
     }
 
     componentDidMount() {
-        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS);
+        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
         this.setState({
             gridDijkstra,
             gridAstar,
@@ -46,6 +49,49 @@ export default class PathfindingVisualizer extends Component {
             gridWallFollowerStartNode,
             gridWallFollowerEndNode
         });
+    }
+    handleSinglePathChange() {
+        this.setState(prevState => ({
+            singlePath: !prevState.singlePath
+        }), this.generateNewMaze);
+    }
+    generateNewMaze() {
+
+        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+
+
+
+
+        this.setState({
+            gridDijkstra,
+            gridAstar,
+            gridBFS,
+            gridDFS,
+            gridWallFollower,
+            gridDijkstraStartNode,
+            gridDijkstraEndNode,
+            gridAstarStartNode,
+            gridAstarEndNode,
+            gridBFSStartNode,
+            gridBFSEndNode,
+            gridDFSStartNode,
+            gridDFSEndNode,
+            gridWallFollowerStartNode,
+            gridWallFollowerEndNode
+        });
+
+        //also clear the css
+        const nodes = document.getElementsByClassName('node');
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            const isStartNode = node.id === `grid${gridDijkstraStartNode.gridId}-node-${gridDijkstraStartNode.row}-${gridDijkstraStartNode.col}`;
+            const isEndNode = node.id === `grid${gridDijkstraEndNode.gridId}-node-${gridDijkstraEndNode.row}-${gridDijkstraEndNode.col}`;
+            const isWallNode = node.className.includes('node-wall');
+            if (!isStartNode && !isEndNode && !isWallNode) {
+                node.className = 'node';
+            }
+        }
+
     }
 
     /*
@@ -239,9 +285,15 @@ export default class PathfindingVisualizer extends Component {
                 <button onClick={() => this.solve()}>
                     Solve
                 </button>
-                <button onClick={() => window.location.reload()}>
+                <button onClick={() => this.generateNewMaze()}>
                     Generate Maze
                 </button>
+                <Switch
+                    checked={this.state.singlePath}
+                    onChange={this.handleSinglePathChange.bind(this)}
+                    color="primary"
+                />
+                <label>Single Path</label>
                 <div className='grid-container'>
                     <div className="grid">
                         <h1>Dijkstra's Algorithm</h1>
@@ -379,8 +431,8 @@ export default class PathfindingVisualizer extends Component {
     }
 }
 
-const getInitialGrid = (numOfRows, numOfCols) => {
-    const { gridDijsktra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols);
+const getInitialGrid = (numOfRows, numOfCols, singlePath) => {
+    const { gridDijsktra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols, singlePath);
     return {
         gridDijkstra: gridDijsktra,
         gridAstar: gridAstar,

@@ -108,20 +108,39 @@ export class Cell {
     // Convert the maze grid to the format expected by the rest of your application
     let grid1 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 1)));
     let grid2 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 2)));
+    let grid3 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 3)));
+    let grid4 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 4)));
+    let grid5 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 5)));
   
     // Find start and end nodes
     let gridDijkstraStartNode = grid1[maze.start.y][maze.start.x];
     let gridDijkstraEndNode = grid1[maze.end.y][maze.end.x];
     let gridAstarStartNode = grid2[maze.start.y][maze.start.x];
     let gridAstarEndNode = grid2[maze.end.y][maze.end.x];
+    let gridBFSStartNode = grid3[maze.start.y][maze.start.x];
+    let gridBFSEndNode = grid3[maze.end.y][maze.end.x];
+    let gridDFSStartNode = grid4[maze.start.y][maze.start.x];
+    let gridDFSEndNode = grid4[maze.end.y][maze.end.x];
+    let gridWallFollowerStartNode = grid5[maze.start.y][maze.start.x];
+    let gridWallFollowerEndNode = grid5[maze.end.y][maze.end.x];
+    
 
     return { 
         gridDijsktra: grid1, 
         gridAstar: grid2,
+        gridBFS: grid3,
+        gridDFS: grid4,
+        gridWallFollower: grid5,
         gridDijkstraStartNode,
         gridDijkstraEndNode,
         gridAstarStartNode,
-        gridAstarEndNode
+        gridAstarEndNode,
+        gridBFSStartNode,
+        gridBFSEndNode,
+        gridDFSStartNode,
+        gridDFSEndNode,
+        gridWallFollowerStartNode,
+        gridWallFollowerEndNode
     };
 }
   

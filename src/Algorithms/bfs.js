@@ -11,7 +11,6 @@ export function bfs(grid, startNode, endNode) {
         visitedNodesInOrder.push(currentNode);
         if (currentNode === endNode) return visitedNodesInOrder;
         const unvisitedNeighbors = getUnvisitedNeighbors(currentNode, grid);
-        if (unvisitedNeighbors.length === 0) break; // Add this line
         for (const neighbor of unvisitedNeighbors) {
             neighbor.distance = currentNode.distance + 1;
             neighbor.previousNode = currentNode;

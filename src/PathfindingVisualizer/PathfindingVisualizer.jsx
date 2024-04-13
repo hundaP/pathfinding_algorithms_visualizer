@@ -5,6 +5,8 @@ import './PathfindingVisualizer.css'
 import { dijkstra, getNodesInShortestPathOrder } from '../Algorithms/dijkstra';
 import { astar } from '../Algorithms/astar';
 import { bfs } from '../Algorithms/bfs';
+import { dfs } from '../Algorithms/dfs';
+import { wallFollower } from '../Algorithms/wall_follower';
 
 import { generateMaze } from '../Algorithms/mazeGenerator';
 
@@ -18,23 +20,31 @@ export default class PathfindingVisualizer extends Component {
             gridDijkstra: [],
             gridAstar: [],
             gridBFS: [],
+            gridDFS: [],
+            gridWallFollower: [],
             startNode: null,
             endNode: null,
         };
     }
 
     componentDidMount() {
-        const { gridDijkstra, gridAstar, gridBFS, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS);
+        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS);
         this.setState({
             gridDijkstra,
             gridAstar,
             gridBFS,
+            gridDFS,
+            gridWallFollower,
             gridDijkstraStartNode,
             gridDijkstraEndNode,
             gridAstarStartNode,
             gridAstarEndNode,
             gridBFSStartNode,
-            gridBFSEndNode
+            gridBFSEndNode,
+            gridDFSStartNode,
+            gridDFSEndNode,
+            gridWallFollowerStartNode,
+            gridWallFollowerEndNode
         });
     }
 
@@ -149,15 +159,79 @@ export default class PathfindingVisualizer extends Component {
         });
         this.animateBFS(visitedNodesInOrder, nodesInShortestPathOrder);
     }
+    // DFS algorithm
+    animateDFS(visitedNodesInOrder, nodesInShortestPathOrder) {
+        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+            if (i === visitedNodesInOrder.length) {
+                setTimeout(() => {
+                    this.animateShortestPath(nodesInShortestPathOrder);
+                }, 5 * i);
+                return;
+            }
+            setTimeout(() => {
+                const node = visitedNodesInOrder[i];
+                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
+            }, 5 * i);
+        }
+    }
 
+    visualizeDFS() {
+        const { gridDFS, gridDFSStartNode, gridDFSEndNode } = this.state;
+        const startTime = performance.now();
+        const visitedNodesInOrder = dfs(gridDFS, gridDFSStartNode, gridDFSEndNode);
+        const endTime = performance.now();
+        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridDFSEndNode);
+        const totalNodes = gridDFS.length * gridDFS[0].length;
+        const wallNodes = gridDFS.flat().filter(node => node.isWall).length;
+        const nonWallNodes = totalNodes - wallNodes;
+        this.setState({
+            DFSTime: endTime - startTime,
+            DFSVisitedNodes: visitedNodesInOrder.length,
+            DFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+        });
+        this.animateDFS(visitedNodesInOrder, nodesInShortestPathOrder);
+    }
+
+    // Wall Follower algorithm
+    animateWallFollower(visitedNodesInOrder, nodesInShortestPathOrder) {
+        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+            if (i === visitedNodesInOrder.length) {
+                setTimeout(() => {
+                    this.animateShortestPath(nodesInShortestPathOrder);
+                }, 5 * i);
+                return;
+            }
+            setTimeout(() => {
+                const node = visitedNodesInOrder[i];
+                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
+            }, 5 * i);
+        }
+    }
+
+    visualizeWallFollower() {
+        const { gridWallFollower, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.state;
+        const startTime = performance.now();
+        const visitedNodesInOrder = wallFollower(gridWallFollower, gridWallFollowerStartNode, gridWallFollowerEndNode);
+        const endTime = performance.now();
+        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridWallFollowerEndNode);
+        const totalNodes = gridWallFollower.length * gridWallFollower[0].length;
+        const wallNodes = gridWallFollower.flat().filter(node => node.isWall).length;
+        const nonWallNodes = totalNodes - wallNodes;
+        this.setState({
+            wallFollowerTime: endTime - startTime,
+            wallFollowerVisitedNodes: visitedNodesInOrder.length,
+            wallFollowerVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100
+        });
+        this.animateWallFollower(visitedNodesInOrder, nodesInShortestPathOrder);
+    }
 
     solve() {
-        Promise.all([this.visualizeDijkstra(), this.visualizeAStar(), this.visualizeBFS()]);
+        Promise.all([this.visualizeDijkstra(), this.visualizeAStar(), this.visualizeBFS(), this.visualizeDFS(), this.visualizeWallFollower()]);
     }
 
     render() {
-        const { gridDijkstra, gridAstar, gridBFS} = this.state;
-        if (!gridDijkstra || !gridAstar || !gridBFS) {
+        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower } = this.state;
+        if (!gridDijkstra || !gridAstar || !gridBFS || !gridDFS || !gridWallFollower) {
             return <div>Loading...</div>; // Or some other placeholder
         }
         return (
@@ -226,7 +300,59 @@ export default class PathfindingVisualizer extends Component {
                         <p>Execution Time: {typeof this.state.BFSTime === 'number' ? this.state.BFSTime.toFixed(2) : 'N/A'} ms</p>
                         <p>Visited Cells: {this.state.BFSVisitedNodes}</p>
                         <p>Visited Percentage: {typeof this.state.BFSVisitedPercentage === 'number' ? this.state.BFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        {gridBFS.map((row, rowIndex) => {
+                        {Array.isArray(gridBFS) && gridBFS.map((row, rowIndex) => {
+                            return (
+                                <div key={rowIndex}>
+                                    {row.map((node, nodeIndex) => {
+                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
+                                        return (
+                                            <Node
+                                                key={nodeIndex}
+                                                col={col}
+                                                isEnd={isEnd}
+                                                isStart={isStart}
+                                                isWall={isWall}
+                                                row={row}
+                                                gridId={gridId}></Node>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="grid">
+                        <h1>Depth-First Search Algorithm</h1>
+                        <p>Execution Time: {typeof this.state.DFSTime === 'number' ? this.state.DFSTime.toFixed(2) : 'N/A'} ms</p>
+                        <p>Visited Cells: {this.state.DFSVisitedNodes}</p>
+                        <p>Visited Percentage: {typeof this.state.DFSVisitedPercentage === 'number' ? this.state.DFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        {Array.isArray(gridDFS) && gridDFS.map((row, rowIndex) => {
+                            return (
+                                <div key={rowIndex}>
+                                    {row.map((node, nodeIndex) => {
+                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
+                                        return (
+                                            <Node
+                                                key={nodeIndex}
+                                                col={col}
+                                                isEnd={isEnd}
+                                                isStart={isStart}
+                                                isWall={isWall}
+                                                row={row}
+                                                gridId={gridId}></Node>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+                <div className='grid-container'>
+                    <div className="grid">
+                        <h1>Wall Follower Algorithm</h1>
+                        <p>Execution Time: {typeof this.state.wallFollowerTime === 'number' ? this.state.wallFollowerTime.toFixed(2) : 'N/A'} ms</p>
+                        <p>Visited Cells: {this.state.wallFollowerVisitedNodes}</p>
+                        <p>Visited Percentage: {typeof this.state.wallFollowerVisitedPercentage === 'number' ? this.state.wallFollowerVisitedPercentage.toFixed(2) : 'N/A'}%</p>
+                        {Array.isArray(gridWallFollower) && gridWallFollower.map((row, rowIndex) => {
                             return (
                                 <div key={rowIndex}>
                                     {row.map((node, nodeIndex) => {
@@ -254,24 +380,22 @@ export default class PathfindingVisualizer extends Component {
 }
 
 const getInitialGrid = (numOfRows, numOfCols) => {
-    const { gridDijsktra, gridAstar, gridBFS, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode} = generateMaze(numOfRows, numOfCols);
+    const { gridDijsktra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols);
     return {
         gridDijkstra: gridDijsktra,
         gridAstar: gridAstar,
         gridBFS: gridBFS,
+        gridDFS: gridDFS,
+        gridWallFollower,
         gridDijkstraStartNode: gridDijkstraStartNode,
         gridDijkstraEndNode: gridDijkstraEndNode,
         gridAstarStartNode: gridAstarStartNode,
         gridAstarEndNode: gridAstarEndNode,
         gridBFSStartNode: gridBFSStartNode,
-        gridBFSEndNode: gridBFSEndNode
+        gridBFSEndNode: gridBFSEndNode,
+        gridDFSStartNode: gridDFSStartNode,
+        gridDFSEndNode: gridDFSEndNode,
+        gridWallFollowerStartNode: gridWallFollowerStartNode,
+        gridWallFollowerEndNode: gridWallFollowerEndNode
     };
 };
-
-
-
-
-
-
-
-

@@ -51,13 +51,3 @@ function getAllNodes(grid){
     return nodes;
 }
 
-// backtracks from the endNode to find the shortest path
-export function getNodesInShortestPathOrder(endNode){
-    const nodesInShortestPathOrder = [];
-    let currentNode = endNode;
-    while(currentNode !== null && currentNode !== undefined){
-        nodesInShortestPathOrder.unshift(currentNode);
-        currentNode = currentNode.previousNode;
-    }
-    return nodesInShortestPathOrder;
-}

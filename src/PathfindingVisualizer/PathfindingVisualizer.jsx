@@ -438,10 +438,10 @@ export default class PathfindingVisualizer extends Component {
     }
 }
 
-function getNodesInShortestPathOrder(endNode) {
+function getNodesInShortestPathOrder(endNode){
     const nodesInShortestPathOrder = [];
     let currentNode = endNode;
-    while (currentNode !== null && currentNode !== undefined) {
+    while(currentNode !== null && currentNode !== undefined){
         nodesInShortestPathOrder.unshift(currentNode);
         currentNode = currentNode.previousNode;
     }

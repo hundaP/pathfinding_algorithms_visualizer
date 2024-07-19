@@ -6,13 +6,13 @@ export function generateMaze(numRows, numCols, singlePath) {
     maze.generateMazeNotGlobal();
   }
 
-  if(!singlePath){
+  if (!singlePath) {
     for (let i = 0; i < numRows * numCols * 0.1; i++) { // remove 10% of the walls
-        let x = Math.floor(Math.random() * (numRows - 2)) + 1;
-        let y = Math.floor(Math.random() * (numCols - 2)) + 1;
-        maze.grid[x][y].isWall = false;
+      let x = Math.floor(Math.random() * (numRows - 2)) + 1;
+      let y = Math.floor(Math.random() * (numCols - 2)) + 1;
+      maze.grid[x][y].isWall = false;
     }
-}
+  }
 
   // Convert the maze grid to the format expected by the rest of your application
   let grid1 = maze.grid.map(row => row.map(cell => createNode(cell.x, cell.y, cell.isWall, maze.start, maze.end, 1)));
@@ -26,10 +26,10 @@ export function generateMaze(numRows, numCols, singlePath) {
   let gridDijkstraEndNode = grid1[maze.end.y][maze.end.x];
   let gridAstarStartNode = grid2[maze.start.y][maze.start.x];
   let gridAstarEndNode = grid2[maze.end.y][maze.end.x];
-  let gridBFSStartNode = grid3[maze.start.y][maze.start.x];
-  let gridBFSEndNode = grid3[maze.end.y][maze.end.x];
-  let gridDFSStartNode = grid4[maze.start.y][maze.start.x];
-  let gridDFSEndNode = grid4[maze.end.y][maze.end.x];
+  let gridBfsStartNode = grid3[maze.start.y][maze.start.x];
+  let gridBfsEndNode = grid3[maze.end.y][maze.end.x];
+  let gridDfsStartNode = grid4[maze.start.y][maze.start.x];
+  let gridDfsEndNode = grid4[maze.end.y][maze.end.x];
   let gridWallFollowerStartNode = grid5[maze.start.y][maze.start.x];
   let gridWallFollowerEndNode = grid5[maze.end.y][maze.end.x];
 
@@ -37,17 +37,17 @@ export function generateMaze(numRows, numCols, singlePath) {
   return {
     gridDijsktra: grid1,
     gridAstar: grid2,
-    gridBFS: grid3,
-    gridDFS: grid4,
+    gridBfs: grid3,
+    gridDfs: grid4,
     gridWallFollower: grid5,
     gridDijkstraStartNode,
     gridDijkstraEndNode,
     gridAstarStartNode,
     gridAstarEndNode,
-    gridBFSStartNode,
-    gridBFSEndNode,
-    gridDFSStartNode,
-    gridDFSEndNode,
+    gridBfsStartNode,
+    gridBfsEndNode,
+    gridDfsStartNode,
+    gridDfsEndNode,
     gridWallFollowerStartNode,
     gridWallFollowerEndNode
   };
@@ -163,6 +163,6 @@ function createNode(col, row, isWall, startNode, endNode, gridId) {
     isVisited: false,
     isWall,
     previousNode: null,
-    gridId
+    gridId,
   };
 }

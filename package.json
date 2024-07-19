@@ -17,16 +17,15 @@
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4",
-    "worker-loader": "^3.0.8",
-    "workerize-loader": "^2.0.2"
+    "worker-loader": "^3.0.8"
   },
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
-    "predeploy" : "npm run build",
-    "deploy" : "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -51,6 +50,7 @@
     "customize-cra": "^1.0.0",
     "eslint": "^9.0.0",
     "gh-pages": "^6.1.1",
-    "react-app-rewired": "^2.2.1"
+    "react-app-rewired": "^2.2.1",
+    "workerize-loader": "^2.0.2"
   }
 }

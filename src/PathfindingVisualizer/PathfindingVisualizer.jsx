@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Node from './Node/Node';
 import './PathfindingVisualizer.css'
+
 // Algorithms
 import { dijkstra } from '../Algorithms/dijkstra';
 import { astar } from '../Algorithms/astar';
@@ -8,6 +9,13 @@ import { bfs } from '../Algorithms/bfs';
 import { dfs } from '../Algorithms/dfs';
 import { wallFollower } from '../Algorithms/wall_follower';
 import { generateMaze } from '../Algorithms/mazeGenerator';
+const algorithms = {
+    dijkstra,
+    astar,
+    bfs,
+    dfs,
+    wallFollower
+};
 
 import Switch from '@material-ui/core/Switch';
 
@@ -20,35 +28,56 @@ export default class PathfindingVisualizer extends Component {
         this.state = {
             gridDijkstra: [],
             gridAstar: [],
-            gridBFS: [],
-            gridDFS: [],
+            gridBfs: [],
+            gridDfs: [],
             gridWallFollower: [],
             startNode: null,
             endNode: null,
-            singlePath: true
+            singlePath: true,
+            isSolving: false
         };
     }
 
     componentDidMount() {
-        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
         this.setState({
             gridDijkstra,
             gridAstar,
-            gridBFS,
-            gridDFS,
+            gridBfs,
+            gridDfs,
             gridWallFollower,
             gridDijkstraStartNode,
             gridDijkstraEndNode,
             gridAstarStartNode,
             gridAstarEndNode,
-            gridBFSStartNode,
-            gridBFSEndNode,
-            gridDFSStartNode,
-            gridDFSEndNode,
+            gridBfsStartNode,
+            gridBfsEndNode,
+            gridDfsStartNode,
+            gridDfsEndNode,
             gridWallFollowerStartNode,
             gridWallFollowerEndNode
         });
     }
+    getInitialGrid(numOfRows, numOfCols, singlePath) {
+        const { gridDijsktra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols, singlePath);
+        return {
+            gridDijkstra: gridDijsktra,
+            gridAstar: gridAstar,
+            gridBfs: gridBfs,
+            gridDfs: gridDfs,
+            gridWallFollower,
+            gridDijkstraStartNode: gridDijkstraStartNode,
+            gridDijkstraEndNode: gridDijkstraEndNode,
+            gridAstarStartNode: gridAstarStartNode,
+            gridAstarEndNode: gridAstarEndNode,
+            gridBfsStartNode: gridBfsStartNode,
+            gridBfsEndNode: gridBfsEndNode,
+            gridDfsStartNode: gridDfsStartNode,
+            gridDfsEndNode: gridDfsEndNode,
+            gridWallFollowerStartNode: gridWallFollowerStartNode,
+            gridWallFollowerEndNode: gridWallFollowerEndNode
+        };
+    };
     handleSinglePathChange() {
         this.setState(prevState => ({
             singlePath: !prevState.singlePath
@@ -56,22 +85,22 @@ export default class PathfindingVisualizer extends Component {
     }
     generateNewMaze() {
 
-        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
 
         this.setState({
             gridDijkstra,
             gridAstar,
-            gridBFS,
-            gridDFS,
+            gridBfs,
+            gridDfs,
             gridWallFollower,
             gridDijkstraStartNode,
             gridDijkstraEndNode,
             gridAstarStartNode,
             gridAstarEndNode,
-            gridBFSStartNode,
-            gridBFSEndNode,
-            gridDFSStartNode,
-            gridDFSEndNode,
+            gridBfsStartNode,
+            gridBfsEndNode,
+            gridDfsStartNode,
+            gridDfsEndNode,
             gridWallFollowerStartNode,
             gridWallFollowerEndNode
         });
@@ -91,10 +120,8 @@ export default class PathfindingVisualizer extends Component {
     }
 
     /*
-    *   Visualizing algorithms
-    */
-
-    // Shortest path
+     *  Animating algorithms
+     */
     animateShortestPath(nodesInShortestPathOrder) {
         for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
             setTimeout(() => {
@@ -103,188 +130,78 @@ export default class PathfindingVisualizer extends Component {
             }, 3 * i);
         }
     }
-
-    // Dijkstra's algorithm
-    animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder) {
-        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === visitedNodesInOrder.length) {
+    animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
+        return new Promise(resolve => {
+            for (let i = 0; i <= visitedNodesInOrder.length; i++) {
+                if (i === visitedNodesInOrder.length) {
+                    setTimeout(() => {
+                        this.animateShortestPath(nodesInShortestPathOrder);
+                        resolve();
+                    }, 30 * i);
+                    return;
+                }
                 setTimeout(() => {
-                    this.animateShortestPath(nodesInShortestPathOrder);
+                    const node = visitedNodesInOrder[i];
+                    document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
                 }, 30 * i);
-                return;
             }
-            setTimeout(() => {
-                const node = visitedNodesInOrder[i];
-                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 30 * i);
-        }
+        });
     }
 
-    visualizeDijkstra() {
-        const { gridDijkstra, gridDijkstraStartNode, gridDijkstraEndNode } = this.state;
+    /*
+    *   Visualizing algorithms
+    */
+    visualizeAlgorithm = async (algorithmName) => {
+        const algorithm = algorithms[algorithmName];
+        const gridKey = `grid${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
+        const startNodeKey = `${gridKey}StartNode`;
+        const endNodeKey = `${gridKey}EndNode`;
+        const timeKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}Time`;
+        const visitedNodesKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}VisitedNodes`;
+        const visitedPercentageKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}VisitedPercentage`;
+        const pathLengthKey = `pathLength${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
+
+        const grid = this.state[gridKey];
+        const startNode = this.state[startNodeKey];
+        const endNode = this.state[endNodeKey];
         const startTime = performance.now();
-        const visitedNodesInOrder = dijkstra(gridDijkstra, gridDijkstraStartNode, gridDijkstraEndNode);
+        const visitedNodesInOrder = algorithm(grid, startNode, endNode);
         const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridDijkstraEndNode);
-        const totalNodes = gridDijkstra.length * gridDijkstra[0].length;
-        const wallNodes = gridDijkstra.flat().filter(node => node.isWall).length;
+        const nodesInShortestPathOrder = getNodesInShortestPathOrder(endNode);
+        const totalNodes = grid.length * grid[0].length;
+        const wallNodes = grid.flat().filter(node => node.isWall).length;
         const nonWallNodes = totalNodes - wallNodes;
         this.setState({
-            dijkstraTime: endTime - startTime,
-            dijkstraVisitedNodes: visitedNodesInOrder.length,
-            dijkstraVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            pathLengthDijkstra: nodesInShortestPathOrder.length
+            [timeKey]: endTime - startTime,
+            [visitedNodesKey]: visitedNodesInOrder.length,
+            [visitedPercentageKey]: (visitedNodesInOrder.length / nonWallNodes) * 100,
+            [pathLengthKey]: nodesInShortestPathOrder.length
         });
-        this.animateDijkstra(visitedNodesInOrder, nodesInShortestPathOrder);
+        await this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
     }
 
-    // A* algorithm
-    animateAStar(visitedNodesInOrder, nodesInShortestPathOrder) {
-        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === visitedNodesInOrder.length) {
-                setTimeout(() => {
-                    this.animateShortestPath(nodesInShortestPathOrder);
-                }, 30 * i);
-                return;
-            }
-            setTimeout(() => {
-                const node = visitedNodesInOrder[i];
-                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 30 * i);
+    getNodesInShortestPathOrder(endNode) {
+        const nodesInShortestPathOrder = [];
+        let currentNode = endNode;
+        while (currentNode !== null && currentNode !== undefined) {
+            nodesInShortestPathOrder.unshift(currentNode);
+            currentNode = currentNode.previousNode;
         }
-    }
-
-    visualizeAStar() {
-        const { gridAstar, gridAstarStartNode, gridAstarEndNode } = this.state;
-        const startTime = performance.now();
-        const visitedNodesInOrder = astar(gridAstar, gridAstarStartNode, gridAstarEndNode);
-        const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridAstarEndNode);
-        const totalNodes = gridAstar.length * gridAstar[0].length;
-        const wallNodes = gridAstar.flat().filter(node => node.isWall).length;
-        const nonWallNodes = totalNodes - wallNodes;
-        this.setState({
-            aStarTime: endTime - startTime,
-            aStarVisitedNodes: visitedNodesInOrder.length,
-            aStarVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            pathLengthAStar: nodesInShortestPathOrder.length
-
-        });
-        this.animateAStar(visitedNodesInOrder, nodesInShortestPathOrder);
-    }
-
-    // BFS algorithm
-    animateBFS(visitedNodesInOrder, nodesInShortestPathOrder) {
-        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === visitedNodesInOrder.length) {
-                setTimeout(() => {
-                    this.animateShortestPath(nodesInShortestPathOrder);
-                }, 30 * i);
-                return;
-            }
-            setTimeout(() => {
-                const node = visitedNodesInOrder[i];
-                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 30 * i);
-        }
-    }
-    visualizeBFS() {
-        const { gridBFS, gridBFSStartNode, gridBFSEndNode } = this.state;
-        const startTime = performance.now();
-        const visitedNodesInOrder = bfs(gridBFS, gridBFSStartNode, gridBFSEndNode);
-        const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridBFSEndNode);
-        const totalNodes = gridBFS.length * gridBFS[0].length;
-        const wallNodes = gridBFS.flat().filter(node => node.isWall).length;
-        const nonWallNodes = totalNodes - wallNodes;
-        this.setState({
-            BFSTime: endTime - startTime,
-            BFSVisitedNodes: visitedNodesInOrder.length,
-            BFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            pathLengthBFS: nodesInShortestPathOrder.length
-        });
-        this.animateBFS(visitedNodesInOrder, nodesInShortestPathOrder);
-    }
-    // DFS algorithm
-    animateDFS(visitedNodesInOrder, nodesInShortestPathOrder) {
-        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === visitedNodesInOrder.length) {
-                setTimeout(() => {
-                    this.animateShortestPath(nodesInShortestPathOrder);
-                }, 30 * i);
-                return;
-            }
-            setTimeout(() => {
-                const node = visitedNodesInOrder[i];
-                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 30 * i);
-        }
-    }
-
-    visualizeDFS() {
-        const { gridDFS, gridDFSStartNode, gridDFSEndNode } = this.state;
-        const startTime = performance.now();
-        const visitedNodesInOrder = dfs(gridDFS, gridDFSStartNode, gridDFSEndNode);
-        const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridDFSEndNode);
-        const totalNodes = gridDFS.length * gridDFS[0].length;
-        const wallNodes = gridDFS.flat().filter(node => node.isWall).length;
-        const nonWallNodes = totalNodes - wallNodes;
-        this.setState({
-            DFSTime: endTime - startTime,
-            DFSVisitedNodes: visitedNodesInOrder.length,
-            DFSVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            pathLengthDFS: nodesInShortestPathOrder.length
-        });
-        this.animateDFS(visitedNodesInOrder, nodesInShortestPathOrder);
-    }
-
-    // Wall Follower algorithm
-    animateWallFollower(visitedNodesInOrder, nodesInShortestPathOrder) {
-        for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-            if (i === visitedNodesInOrder.length) {
-                setTimeout(() => {
-                    this.animateShortestPath(nodesInShortestPathOrder);
-                }, 30 * i);
-                return;
-            }
-            setTimeout(() => {
-                const node = visitedNodesInOrder[i];
-                document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-            }, 30 * i);
-        }
-    }
-
-    visualizeWallFollower() {
-        const { gridWallFollower, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.state;
-        const startTime = performance.now();
-        const visitedNodesInOrder = wallFollower(gridWallFollower, gridWallFollowerStartNode, gridWallFollowerEndNode);
-        const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(gridWallFollowerEndNode);
-        const totalNodes = gridWallFollower.length * gridWallFollower[0].length;
-        const wallNodes = gridWallFollower.flat().filter(node => node.isWall).length;
-        const nonWallNodes = totalNodes - wallNodes;
-        this.setState({
-            wallFollowerTime: endTime - startTime,
-            wallFollowerVisitedNodes: visitedNodesInOrder.length,
-            wallFollowerVisitedPercentage: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            pathLengthWallFollower: nodesInShortestPathOrder.length
-        });
-        this.animateWallFollower(visitedNodesInOrder, nodesInShortestPathOrder);
+        return nodesInShortestPathOrder;
     }
 
     solve() {
-        Promise.all([this.visualizeDijkstra(), this.visualizeAStar(), this.visualizeBFS(), this.visualizeDFS(), this.visualizeWallFollower()]);
+        this.setState({ isSolving: true });
+        const algorithmNames = Object.keys(algorithms);
+        const promises = algorithmNames.map(name => this.visualizeAlgorithm(name));
+        Promise.all(promises).then(() => this.setState({ isSolving: false }));
     }
 
     render() {
-        const { gridDijkstra, gridAstar, gridBFS, gridDFS, gridWallFollower } = this.state;
-        if (!gridDijkstra || !gridAstar || !gridBFS || !gridDFS || !gridWallFollower) {
-            return <div>Loading...</div>; // Or some other placeholder
-        }
+        const algorithmNames = Object.keys(algorithms);
         return (
             <>
-                <button onClick={() => this.solve()}>
+                <button onClick={() => this.solve()} disabled={this.state.isSolving}>
                     Solve
                 </button>
                 <button onClick={() => this.generateNewMaze()}>
@@ -296,175 +213,50 @@ export default class PathfindingVisualizer extends Component {
                     color="primary"
                 />
                 <label>Single Path</label>
-                <div className='grid-container'>
-                    <div className="grid">
-                        <h1>Dijkstra's Algorithm</h1>
-                        <p>Execution Time: {typeof this.state.dijkstraTime === 'number' ? this.state.dijkstraTime.toFixed(2) : 'N/A'} ms</p>
-                        <p>Visited Cells: {this.state.dijkstraVisitedNodes}</p>
-                        <p>Visited Percentage: {typeof this.state.dijkstraVisitedPercentage === 'number' ? this.state.dijkstraVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        <p>Dijkstra's Algorithm Path Length: {this.state.pathLengthDijkstra}</p>
-                        {gridDijkstra.map((row, rowIndex) => {
-                            return (
-                                <div key={rowIndex}>
-                                    {row.map((node, nodeIndex) => {
-                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
-                                        return (
-                                            <Node
-                                                key={nodeIndex}
-                                                col={col}
-                                                isEnd={isEnd}
-                                                isStart={isStart}
-                                                isWall={isWall}
-                                                row={row}
-                                                gridId={gridId}></Node>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="grid">
-                        <h1>A* Algorithm</h1>
-                        <p>Execution Time: {typeof this.state.aStarTime === 'number' ? this.state.aStarTime.toFixed(2) : 'N/A'} ms</p>
-                        <p>Visited Cells: {this.state.aStarVisitedNodes}</p>
-                        <p>Visited Percentage: {typeof this.state.aStarVisitedPercentage === 'number' ? this.state.aStarVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        <p>A* Algorithm Path Length: {this.state.pathLengthAStar}</p>
-                        {gridAstar.map((row, rowIndex) => {
-                            return (
-                                <div key={rowIndex}>
-                                    {row.map((node, nodeIndex) => {
-                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
-                                        return (
-                                            <Node
-                                                key={nodeIndex}
-                                                col={col}
-                                                isEnd={isEnd}
-                                                isStart={isStart}
-                                                isWall={isWall}
-                                                row={row}
-                                                gridId={gridId}></Node>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-                <div className='grid-container'>
-                    <div className="grid">
-                        <h1>Breadth-First Search Algorithm</h1>
-                        <p>Execution Time: {typeof this.state.BFSTime === 'number' ? this.state.BFSTime.toFixed(2) : 'N/A'} ms</p>
-                        <p>Visited Cells: {this.state.BFSVisitedNodes}</p>
-                        <p>Visited Percentage: {typeof this.state.BFSVisitedPercentage === 'number' ? this.state.BFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        <p>BFS Algorithm Path Length: {this.state.pathLengthBFS}</p>
-                        {Array.isArray(gridBFS) && gridBFS.map((row, rowIndex) => {
-                            return (
-                                <div key={rowIndex}>
-                                    {row.map((node, nodeIndex) => {
-                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
-                                        return (
-                                            <Node
-                                                key={nodeIndex}
-                                                col={col}
-                                                isEnd={isEnd}
-                                                isStart={isStart}
-                                                isWall={isWall}
-                                                row={row}
-                                                gridId={gridId}></Node>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="grid">
-                        <h1>Depth-First Search Algorithm</h1>
-                        <p>Execution Time: {typeof this.state.DFSTime === 'number' ? this.state.DFSTime.toFixed(2) : 'N/A'} ms</p>
-                        <p>Visited Cells: {this.state.DFSVisitedNodes}</p>
-                        <p>Visited Percentage: {typeof this.state.DFSVisitedPercentage === 'number' ? this.state.DFSVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        <p>DFS Algorithm Path Length: {this.state.pathLengthDFS}</p>
-                        {Array.isArray(gridDFS) && gridDFS.map((row, rowIndex) => {
-                            return (
-                                <div key={rowIndex}>
-                                    {row.map((node, nodeIndex) => {
-                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
-                                        return (
-                                            <Node
-                                                key={nodeIndex}
-                                                col={col}
-                                                isEnd={isEnd}
-                                                isStart={isStart}
-                                                isWall={isWall}
-                                                row={row}
-                                                gridId={gridId}></Node>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-                <div className='grid-container'>
-                    <div className="grid">
-                        <h1>Wall Follower Algorithm</h1>
-                        <p>Execution Time: {typeof this.state.wallFollowerTime === 'number' ? this.state.wallFollowerTime.toFixed(2) : 'N/A'} ms</p>
-                        <p>Visited Cells: {this.state.wallFollowerVisitedNodes}</p>
-                        <p>Visited Percentage: {typeof this.state.wallFollowerVisitedPercentage === 'number' ? this.state.wallFollowerVisitedPercentage.toFixed(2) : 'N/A'}%</p>
-                        <p>Wall Follower Algorithm Path Length: {this.state.pathLengthWallFollower}</p>
-                        {Array.isArray(gridWallFollower) && gridWallFollower.map((row, rowIndex) => {
-                            return (
-                                <div key={rowIndex}>
-                                    {row.map((node, nodeIndex) => {
-                                        const { row, col, isEnd, isStart, isWall, gridId } = node;
-                                        return (
-                                            <Node
-                                                key={nodeIndex}
-                                                col={col}
-                                                isEnd={isEnd}
-                                                isStart={isStart}
-                                                isWall={isWall}
-                                                row={row}
-                                                gridId={gridId}></Node>
-                                        );
-                                    })}
-                                </div>
-                            );
-                        })}
-                    </div>
+                <div className="grid-container">
+                    {algorithmNames.map((algorithmName) => {
+                        const gridKey = `grid${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
+                        const timeKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}Time`;
+                        const visitedNodesKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}VisitedNodes`;
+                        const visitedPercentageKey = `${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}VisitedPercentage`;
+                        const pathLengthKey = `pathLength${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
+
+                        const grid = this.state[gridKey];
+                        if (!grid) {
+                            return <div>Loading...</div>; // Or some other placeholder
+                        }
+
+                        return (
+                            <div className="grid" key={algorithmName}>
+                                <h1>{algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)} Algorithm</h1>
+                                <p>Execution Time: {typeof this.state[timeKey] === 'number' ? this.state[timeKey].toFixed(2) : 'N/A'} ms</p>
+                                <p>Visited Cells: {this.state[visitedNodesKey]}</p>
+                                <p>Visited Percentage: {typeof this.state[visitedPercentageKey] === 'number' ? this.state[visitedPercentageKey].toFixed(2) : 'N/A'}%</p>
+                                <p>{algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)} Algorithm Path Length: {this.state[pathLengthKey]}</p>
+                                {grid.map((row, rowIndex) => {
+                                    return (
+                                        <div key={rowIndex}>
+                                            {row.map((node, nodeIndex) => {
+                                                const { row, col, isEnd, isStart, isWall, gridId } = node;
+                                                return (
+                                                    <Node
+                                                        key={nodeIndex}
+                                                        col={col}
+                                                        isEnd={isEnd}
+                                                        isStart={isStart}
+                                                        isWall={isWall}
+                                                        row={row}
+                                                        gridId={gridId}></Node>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
                 </div>
             </>
         );
-
     }
 }
-
-function getNodesInShortestPathOrder(endNode){
-    const nodesInShortestPathOrder = [];
-    let currentNode = endNode;
-    while(currentNode !== null && currentNode !== undefined){
-        nodesInShortestPathOrder.unshift(currentNode);
-        currentNode = currentNode.previousNode;
-    }
-    return nodesInShortestPathOrder;
-}
-
-const getInitialGrid = (numOfRows, numOfCols, singlePath) => {
-    const { gridDijsktra, gridAstar, gridBFS, gridDFS, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBFSStartNode, gridBFSEndNode, gridDFSStartNode, gridDFSEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols, singlePath);
-    return {
-        gridDijkstra: gridDijsktra,
-        gridAstar: gridAstar,
-        gridBFS: gridBFS,
-        gridDFS: gridDFS,
-        gridWallFollower,
-        gridDijkstraStartNode: gridDijkstraStartNode,
-        gridDijkstraEndNode: gridDijkstraEndNode,
-        gridAstarStartNode: gridAstarStartNode,
-        gridAstarEndNode: gridAstarEndNode,
-        gridBFSStartNode: gridBFSStartNode,
-        gridBFSEndNode: gridBFSEndNode,
-        gridDFSStartNode: gridDFSStartNode,
-        gridDFSEndNode: gridDFSEndNode,
-        gridWallFollowerStartNode: gridWallFollowerStartNode,
-        gridWallFollowerEndNode: gridWallFollowerEndNode
-    };
-};

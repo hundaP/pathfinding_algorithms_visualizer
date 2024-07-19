@@ -1,7 +1,9 @@
-.grid-container{
+.grid-container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-around;
 }
+
 .grid{
     margin: 100px 20px 0;
 }

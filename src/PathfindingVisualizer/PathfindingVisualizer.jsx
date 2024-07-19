@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Node from './Node/Node';
 import './PathfindingVisualizer.css'
+import Switch from '@material-ui/core/Switch';
 
 // Algorithms
 import { dijkstra } from '../Algorithms/dijkstra';
@@ -16,8 +17,6 @@ const algorithms = {
     dfs,
     wallFollower
 };
-
-import Switch from '@material-ui/core/Switch';
 
 export default class PathfindingVisualizer extends Component {
     NUM_OF_ROWS = 30;
@@ -39,7 +38,7 @@ export default class PathfindingVisualizer extends Component {
     }
 
     componentDidMount() {
-        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
         this.setState({
             gridDijkstra,
             gridAstar,
@@ -85,7 +84,7 @@ export default class PathfindingVisualizer extends Component {
     }
     generateNewMaze() {
 
-        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
 
         this.setState({
             gridDijkstra,
@@ -167,7 +166,7 @@ export default class PathfindingVisualizer extends Component {
         const startTime = performance.now();
         const visitedNodesInOrder = algorithm(grid, startNode, endNode);
         const endTime = performance.now();
-        const nodesInShortestPathOrder = getNodesInShortestPathOrder(endNode);
+        const nodesInShortestPathOrder = this.getNodesInShortestPathOrder(endNode);
         const totalNodes = grid.length * grid[0].length;
         const wallNodes = grid.flat().filter(node => node.isWall).length;
         const nonWallNodes = totalNodes - wallNodes;

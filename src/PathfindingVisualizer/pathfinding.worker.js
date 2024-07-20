@@ -25,6 +25,9 @@ self.addEventListener('message', (event) => {
     case 'wallFollower':
       algorithm = wallFollower;
       break;
+    default:
+      console.log("No such algorithm");
+      break;
   }
   const startTime = performance.now();
   const visitedNodesInOrder = algorithm(grid, startNode, endNode);

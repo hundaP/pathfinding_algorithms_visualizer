@@ -11,6 +11,7 @@ import { dfs } from '../Algorithms/dfs';
 import { wallFollower } from '../Algorithms/wall_follower';
 import { generateMaze } from '../Algorithms/mazeGenerator';
 
+// eslint-disable-next-line import/no-webpack-loader-syntax
 import Worker from 'worker-loader!./pathfinding.worker.js';
 
 const algorithms = {
@@ -20,6 +21,10 @@ const algorithms = {
     dfs,
     wallFollower
 };
+
+const MAX_WORKERS = navigator.hardwareConcurrency || 4; // Use the number of logical processors or a default value
+
+let activeWorkers = 0;
 
 export default class PathfindingVisualizer extends Component {
     NUM_OF_ROWS = 30;
@@ -149,12 +154,28 @@ export default class PathfindingVisualizer extends Component {
             }
         });
     }
-
     /*
     *   Visualizing algorithms
     */
+    // Function to wait for a worker spot to be freed
+    waitForWorkerSpot() {
+        return new Promise(resolve => {
+            if (activeWorkers >= MAX_WORKERS) {
+                console.log('Reached maximum limit of active workers. Waiting for a worker spot to be freed...');
+            }
+            const intervalId = setInterval(() => {
+                if (activeWorkers < MAX_WORKERS) {
+                    clearInterval(intervalId);
+                    console.log('A worker spot has been freed. Resuming execution...');
+                    resolve();
+                }
+            }, 10); // Check every [time]
+        });
+    }
     visualizeAlgorithm = async (algorithmName) => {
-        const algorithm = algorithms[algorithmName];
+        // Wait for a worker spot to be freed
+        await this.waitForWorkerSpot();
+
         const gridKey = `grid${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
         const startNodeKey = `${gridKey}StartNode`;
         const endNodeKey = `${gridKey}EndNode`;
@@ -169,6 +190,7 @@ export default class PathfindingVisualizer extends Component {
 
         // Create a new worker
         const worker = new Worker();
+        activeWorkers++;
 
         // Send data to our worker
         worker.postMessage({ algorithmName, grid, startNode, endNode });
@@ -186,6 +208,7 @@ export default class PathfindingVisualizer extends Component {
                 [visitedPercentageKey]: (visitedNodesInOrder.length / nonWallNodes) * 100,
                 [pathLengthKey]: nodesInShortestPathOrder.length
             });
+            activeWorkers--;
             this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
         };
     }

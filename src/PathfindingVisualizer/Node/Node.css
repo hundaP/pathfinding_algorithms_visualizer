@@ -3,6 +3,9 @@
     height: 10px;
     border: 1px solid #484D6D;
     display: inline-block;
+    box-sizing: border-box;
+
+
 }
 .node-start {
     background-color: green;
@@ -21,7 +24,7 @@
     animation-fill-mode: forwards;
     animation-play-state: running;
 }
-
+    
 @keyframes visitedAnimation {
     0% {
         background-color: #29315a;
@@ -29,7 +32,7 @@
     100% {
         background-color: #4b8f8c;
     }
-}
+    }
 
 .node-shortest-path {
     animation-name: shortestPath;

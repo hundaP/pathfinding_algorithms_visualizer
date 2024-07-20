@@ -1,3 +1,10 @@
+# Cloning the repo:
+use
+```git
+git clone --recurse-submodules https://github.com/username/visualizer.git
+```
+
+in order to clone the submodule: https://github.com/TheCowPlays/pathfinding_algorithms_test_runner
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

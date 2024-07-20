@@ -26,14 +26,14 @@
     background-color: #4b8f8c;
 
 }
-
 @keyframes visitedAnimation {
-    25 % {
+    0% {
         background-color: #29315a;
-
+    }
+    100% {
+        background-color: hsl(${hue}, 50%, ${lightness}%);
     }
 }
-
 .node-shortest-path {
     animation-name: shortestPath;
     animation-duration: 1s;

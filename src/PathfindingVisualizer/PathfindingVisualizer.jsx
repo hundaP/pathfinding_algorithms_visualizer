@@ -10,6 +10,9 @@ import { bfs } from '../Algorithms/bfs';
 import { dfs } from '../Algorithms/dfs';
 import { wallFollower } from '../Algorithms/wall_follower';
 import { generateMaze } from '../Algorithms/mazeGenerator';
+
+import Worker from 'worker-loader!./pathfinding.worker.js';
+
 const algorithms = {
     dijkstra,
     astar,
@@ -163,20 +166,28 @@ export default class PathfindingVisualizer extends Component {
         const grid = this.state[gridKey];
         const startNode = this.state[startNodeKey];
         const endNode = this.state[endNodeKey];
-        const startTime = performance.now();
-        const visitedNodesInOrder = algorithm(grid, startNode, endNode);
-        const endTime = performance.now();
-        const nodesInShortestPathOrder = this.getNodesInShortestPathOrder(endNode);
-        const totalNodes = grid.length * grid[0].length;
-        const wallNodes = grid.flat().filter(node => node.isWall).length;
-        const nonWallNodes = totalNodes - wallNodes;
-        this.setState({
-            [timeKey]: endTime - startTime,
-            [visitedNodesKey]: visitedNodesInOrder.length,
-            [visitedPercentageKey]: (visitedNodesInOrder.length / nonWallNodes) * 100,
-            [pathLengthKey]: nodesInShortestPathOrder.length
-        });
-        await this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+
+        // Create a new worker
+        const worker = new Worker();
+
+        // Send data to our worker
+        worker.postMessage({ algorithmName, grid, startNode, endNode });
+
+        // Listen for messages from the worker
+        worker.onmessage = (event) => {
+            const { visitedNodesInOrder, nodesInShortestPathOrder, startTime, endTime } = event.data;
+
+            const totalNodes = grid.length * grid[0].length;
+            const wallNodes = grid.flat().filter(node => node.isWall).length;
+            const nonWallNodes = totalNodes - wallNodes;
+            this.setState({
+                [timeKey]: endTime - startTime,
+                [visitedNodesKey]: visitedNodesInOrder.length,
+                [visitedPercentageKey]: (visitedNodesInOrder.length / nonWallNodes) * 100,
+                [pathLengthKey]: nodesInShortestPathOrder.length
+            });
+            this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+        };
     }
 
     getNodesInShortestPathOrder(endNode) {

@@ -23,16 +23,16 @@
     animation-delay: 0;
     animation-fill-mode: forwards;
     animation-play-state: running;
+    background-color: #4b8f8c;
+
 }
-    
+
 @keyframes visitedAnimation {
-    0% {
+    25 % {
         background-color: #29315a;
+
     }
-    100% {
-        background-color: #4b8f8c;
-    }
-    }
+}
 
 .node-shortest-path {
     animation-name: shortestPath;
@@ -41,7 +41,9 @@
     animation-delay: 0;
     animation-fill-mode: forwards;
     animation-play-state: running;
+    background-color: hsl(var(--hue, 24), 100%, 50%);
 }
+
 @keyframes shortestPath {
     0% {
         transform: scale(0.6);

@@ -130,28 +130,39 @@ export default class PathfindingVisualizer extends Component {
      *  Animating algorithms
      */
     animateShortestPath(nodesInShortestPathOrder) {
-        for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-            setTimeout(() => {
+        let i = 0;
+        const animate = () => {
+            if (i < nodesInShortestPathOrder.length) {
                 const node = nodesInShortestPathOrder[i];
                 document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-shortest-path';
-            }, 3 * i);
-        }
+                i++;
+                requestAnimationFrame(animate);
+            }
+        };
+        animate();
     }
     animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
         return new Promise(resolve => {
-            for (let i = 0; i <= visitedNodesInOrder.length; i++) {
-                if (i === visitedNodesInOrder.length) {
-                    setTimeout(() => {
-                        this.animateShortestPath(nodesInShortestPathOrder);
-                        resolve();
-                    }, 30 * i);
-                    return;
-                }
-                setTimeout(() => {
+            let i = 0;
+            const animate = () => {
+                if (i < visitedNodesInOrder.length) {
                     const node = visitedNodesInOrder[i];
-                    document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-visited';
-                }, 30 * i);
-            }
+                    const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`);
+                    nodeElement.classList.add('node', 'node-visited');
+                    // set color to corresponding HSL color only when backtracking
+                    if (node.noOfVisits > 1 && visitedNodesInOrder[i + 1] === node.previousNode) {
+                        const hue = 174 + (node.noOfVisits - 1) * 10; // start from 174 and add 10 for each additional visit
+                        const lightness = 30 - (node.noOfVisits - 1) * 5; // start from 40 and subtract 5 for each additional visit
+                        nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
+                    }
+                    i++;
+                    requestAnimationFrame(animate);
+                } else {
+                    this.animateShortestPath(nodesInShortestPathOrder);
+                    resolve();
+                }
+            };
+            animate();
         });
     }
     /*

@@ -22,12 +22,9 @@
     "worker-loader": "^3.0.8"
   },
   "scripts": {
-    "start": "concurrently \"npm run start-react\" \"npm run start-node\"",
-    "start-react": "react-app-rewired start",
+    "start": "react-app-rewired start",
     "start-node": "cd pathfinding_algorithms_test_runner && node server.js",
-       "build": "npm run build-react && npm run build-node",
     "build-react": "react-app-rewired build",
-    "build-node": "cd pathfinding_algorithms_test_runner && npm install && npm run build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",

@@ -3,22 +3,33 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@eslint/js": "^9.0.0",
-    "@material-ui/core": "^4.12.4",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
+    "@mui/material": "^5.13.5",
+    "@svgr/plugin-svgo": "^8.1.0",
+    "@svgr/webpack": "^8.1.0",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
     "buffer": "^6.0.3",
     "concurrently": "^8.2.2",
+    "css-select": "^5.1.0",
     "eslint-plugin-react": "^7.34.1",
     "fs": "^0.0.1-security",
     "gc-profiler": "^1.4.2",
     "globals": "^15.0.0",
+    "install": "^0.13.0",
+    "npm": "^10.8.2",
+    "nth-check": "^2.1.1",
     "papaparse": "^5.4.1",
+    "postcss": "^8.4.39",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
-    "web-vitals": "^2.1.4",
+    "resolve-url-loader": "^5.0.0",
+    "svgo": "^3.3.2",
+    "web-vitals": "^4.2.2",
     "worker-loader": "^3.0.8"
   },
   "scripts": {
@@ -36,6 +47,10 @@
       "react-app/jest"
     ]
   },
+  "resolutions": {
+    "nth-check": "2.1.1",
+    "postcss": "8.4.31"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -50,9 +65,18 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-transform-class-properties": "^7.18.6",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^7.18.6",
+    "@babel/plugin-transform-numeric-separator": "^7.18.6",
+    "@babel/plugin-transform-optional-chaining": "^7.21.0",
+    "@babel/plugin-transform-private-methods": "^7.18.6",
+    "@babel/plugin-transform-private-property-in-object": "^7.21.11",
+    "@rollup/plugin-terser": "^0.4.4",
     "customize-cra": "^1.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-react-app": "^7.0.1",
     "gh-pages": "^6.1.1",
+    "npm-force-resolutions": "^0.0.10",
     "react-app-rewired": "^2.2.1",
     "workerize-loader": "^2.0.2"
   }

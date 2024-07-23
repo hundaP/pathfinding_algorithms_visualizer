@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Node from './Node/Node';
 import './PathfindingVisualizer.css'
-import Switch from '@material-ui/core/Switch';
+import Switch from '@mui/material/Switch';
 
 // Algorithms
 import { dijkstra } from '../Algorithms/dijkstra';

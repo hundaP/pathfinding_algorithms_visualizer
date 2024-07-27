@@ -1,5 +1,10 @@
 {
   "name": "Codespace",
   "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+        "version": "latest"
+    }
+  },
   "postCreateCommand": "scripts/setup.sh"
 }

@@ -1,0 +1,10 @@
+{
+  "name": "Codespace",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu",
+  "postCreateCommand": "scripts/setup.sh",
+  "runArgs": [
+    "--memory=16g",
+    "--cpus=4"
+  ]
+}
+

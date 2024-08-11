@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Node from './Node/Node';
 import './PathfindingVisualizer.css'
 import Switch from '@mui/material/Switch';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
 
 // Algorithms
 import { dijkstra } from '../Algorithms/dijkstra';
@@ -22,14 +24,11 @@ const algorithms = {
     wallFollower
 };
 
-const MAX_WORKERS = navigator.hardwareConcurrency || 4; // Use the number of logical processors or a default value
+const MAX_WORKERS = navigator.hardwareConcurrency || 4;
 
 let activeWorkers = 0;
 
 export default class PathfindingVisualizer extends Component {
-    NUM_OF_ROWS = 30;
-    NUM_OF_COLS = 30;
-
     constructor() {
         super();
         this.state = {
@@ -41,30 +40,15 @@ export default class PathfindingVisualizer extends Component {
             startNode: null,
             endNode: null,
             singlePath: true,
-            isSolving: false
+            isSolving: false,
+            mazeSize: 50, // Default size
         };
     }
 
     componentDidMount() {
-        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
-        this.setState({
-            gridDijkstra,
-            gridAstar,
-            gridBfs,
-            gridDfs,
-            gridWallFollower,
-            gridDijkstraStartNode,
-            gridDijkstraEndNode,
-            gridAstarStartNode,
-            gridAstarEndNode,
-            gridBfsStartNode,
-            gridBfsEndNode,
-            gridDfsStartNode,
-            gridDfsEndNode,
-            gridWallFollowerStartNode,
-            gridWallFollowerEndNode
-        });
+        this.generateNewMaze();
     }
+
     getInitialGrid(numOfRows, numOfCols, singlePath) {
         const { gridDijsktra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = generateMaze(numOfRows, numOfCols, singlePath);
         return {
@@ -85,14 +69,19 @@ export default class PathfindingVisualizer extends Component {
             gridWallFollowerEndNode: gridWallFollowerEndNode
         };
     };
-    handleSinglePathChange() {
+
+    handleSinglePathChange = () => {
         this.setState(prevState => ({
             singlePath: !prevState.singlePath
         }), this.generateNewMaze);
     }
-    generateNewMaze() {
 
-        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.getInitialGrid(this.NUM_OF_ROWS, this.NUM_OF_COLS, this.state.singlePath);
+    handleMazeSizeChange = (event, newValue) => {
+        this.setState({ mazeSize: newValue }, this.generateNewMaze);
+    }
+
+    generateNewMaze = () => {
+        const { gridDijkstra, gridAstar, gridBfs, gridDfs, gridWallFollower, gridDijkstraStartNode, gridDijkstraEndNode, gridAstarStartNode, gridAstarEndNode, gridBfsStartNode, gridBfsEndNode, gridDfsStartNode, gridDfsEndNode, gridWallFollowerStartNode, gridWallFollowerEndNode } = this.getInitialGrid(this.state.mazeSize, this.state.mazeSize, this.state.singlePath);
 
         this.setState({
             gridDijkstra,
@@ -112,7 +101,7 @@ export default class PathfindingVisualizer extends Component {
             gridWallFollowerEndNode
         });
 
-        //also clear the css
+        // Clear the CSS
         const nodes = document.getElementsByClassName('node');
         for (let i = 0; i < nodes.length; i++) {
             const node = nodes[i];
@@ -123,12 +112,8 @@ export default class PathfindingVisualizer extends Component {
                 node.className = 'node';
             }
         }
-
     }
 
-    /*
-     *  Animating algorithms
-     */
     animateShortestPath(nodesInShortestPathOrder) {
         let i = 0;
         const animate = () => {
@@ -141,6 +126,7 @@ export default class PathfindingVisualizer extends Component {
         };
         animate();
     }
+
     animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
         return new Promise(resolve => {
             let i = 0;
@@ -149,10 +135,9 @@ export default class PathfindingVisualizer extends Component {
                     const node = visitedNodesInOrder[i];
                     const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`);
                     nodeElement.classList.add('node', 'node-visited');
-                    // set color to corresponding HSL color only when backtracking
                     if (node.noOfVisits > 1 && visitedNodesInOrder[i + 1] === node.previousNode) {
-                        const hue = 174 + (node.noOfVisits - 1) * 10; // start from 174 and add 10 for each additional visit
-                        const lightness = 30 - (node.noOfVisits - 1) * 5; // start from 40 and subtract 5 for each additional visit
+                        const hue = 174 + (node.noOfVisits - 1) * 10;
+                        const lightness = 30 - (node.noOfVisits - 1) * 5;
                         nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
                     }
                     i++;
@@ -165,10 +150,7 @@ export default class PathfindingVisualizer extends Component {
             animate();
         });
     }
-    /*
-    *   Visualizing algorithms
-    */
-    // Function to wait for a worker spot to be freed
+
     waitForWorkerSpot() {
         return new Promise(resolve => {
             if (activeWorkers >= MAX_WORKERS) {
@@ -180,11 +162,11 @@ export default class PathfindingVisualizer extends Component {
                     console.log('A worker spot has been freed. Resuming execution...');
                     resolve();
                 }
-            }, 10); // Check every [time]
+            }, 10);
         });
     }
+
     visualizeAlgorithm = async (algorithmName) => {
-        // Wait for a worker spot to be freed
         await this.waitForWorkerSpot();
 
         const gridKey = `grid${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
@@ -199,14 +181,11 @@ export default class PathfindingVisualizer extends Component {
         const startNode = this.state[startNodeKey];
         const endNode = this.state[endNodeKey];
 
-        // Create a new worker
         const worker = new Worker();
         activeWorkers++;
 
-        // Send data to our worker
         worker.postMessage({ algorithmName, grid, startNode, endNode });
 
-        // Listen for messages from the worker
         worker.onmessage = (event) => {
             const { visitedNodesInOrder, nodesInShortestPathOrder, startTime, endTime } = event.data;
 
@@ -234,7 +213,7 @@ export default class PathfindingVisualizer extends Component {
         return nodesInShortestPathOrder;
     }
 
-    solve() {
+    solve = () => {
         this.setState({ isSolving: true });
         const algorithmNames = Object.keys(algorithms);
         const promises = algorithmNames.map(name => this.visualizeAlgorithm(name));
@@ -245,18 +224,36 @@ export default class PathfindingVisualizer extends Component {
         const algorithmNames = Object.keys(algorithms);
         return (
             <>
-                <button onClick={() => this.solve()} disabled={this.state.isSolving}>
+                <button onClick={this.solve} disabled={this.state.isSolving}>
                     Solve
                 </button>
-                <button onClick={() => this.generateNewMaze()}>
+                <button onClick={this.generateNewMaze}>
                     Generate Maze
                 </button>
+
                 <Switch
                     checked={this.state.singlePath}
-                    onChange={this.handleSinglePathChange.bind(this)}
+                    onChange={this.handleSinglePathChange}
                     color="primary"
                 />
                 <label>Single Path</label>
+
+                <div style={{ width: '300px', margin: '20px auto' }}>
+                    <Typography id="maze-size-slider" gutterBottom>
+                        Maze Size: {this.state.mazeSize}x{this.state.mazeSize}
+                    </Typography>
+                    <Slider
+                        value={this.state.mazeSize}
+                        onChange={this.handleMazeSizeChange}
+                        aria-labelledby="maze-size-slider"
+                        valueLabelDisplay="auto"
+                        step={10}
+                        marks
+                        min={10}
+                        max={100}
+                    />
+                </div>
+
                 <div className="grid-container">
                     {algorithmNames.map((algorithmName) => {
                         const gridKey = `grid${algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1)}`;
@@ -267,7 +264,7 @@ export default class PathfindingVisualizer extends Component {
 
                         const grid = this.state[gridKey];
                         if (!grid) {
-                            return <div>Loading...</div>; // Or some other placeholder
+                            return <div key={algorithmName}>Loading...</div>;
                         }
 
                         return (

@@ -64,8 +64,14 @@ class Cell {
 
 class Maze {
   constructor(width, height) {
-    this.width = width * 2 + 1; // Adjust for walls
-    this.height = height * 2 + 1; // Adjust for walls
+    if (width % 2 ==0 ){
+      width++;
+    }
+    if (height % 2 == 0){
+      height++;
+    }
+    this.width = width
+    this.height = height
     this.grid = [];
     this.stack = [];
 

@@ -43,3 +43,25 @@ html{
     transform: rotate(360deg);
   }
 }
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .grid {
+      width: 45vw; /* Adjust to fit two grids in a row */
+      height: 45vw; /* Maintain aspect ratio */
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+      width: 90vw; /* Adjust to fit one grid in a row */
+      height: 90vw; /* Maintain aspect ratio */
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+      width: 100vw; /* Adjust to fit one grid in a row */
+      height: 100vw; /* Maintain aspect ratio */
+  }
+}

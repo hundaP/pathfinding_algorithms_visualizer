@@ -62,7 +62,6 @@ func AstarAlgorithm(grid [][]maze.Node, startNode, endNode *maze.Node) []maze.No
 				neighbor.H = heuristic(neighbor, endNode)
 				neighbor.F = tentativeGScore + neighbor.H
 				neighbor.PreviousNode = current // Set the previous node
-				neighbor.PreviousNodeIndex = current.Index
 
 				// Only push the neighbor to the open set if it's not already in it
 				if !closedSet[neighborIndex] {

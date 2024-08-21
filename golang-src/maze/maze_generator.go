@@ -13,20 +13,16 @@ type Cell struct {
 }
 
 type Node struct {
-	X                 uint16  `json:"col"`
-	Y                 uint16  `json:"row"`
-	IsStart           bool    `json:"isStart"`
-	IsEnd             bool    `json:"isEnd"`
-	Distance          uint32  `json:"distance"`
-	IsVisited         bool    `json:"isVisited"`
-	IsWall            bool    `json:"isWall"`
-	PreviousNode      *Node   `json:"previousNode,omitempty"` // Keep as *Node for Go logic
-	GridId            uint8   `json:"gridId"`
-	NoOfVisits        uint8   `json:"noOfVisits"`
-	H                 float32 `json:"h,omitempty"`
-	F                 float32 `json:"f,omitempty"`
-	Index             uint16  `json:"index"` // New field
-	PreviousNodeIndex uint16  `json:"previousNodeIndex"`
+	X, Y         uint16
+	IsStart      bool
+	IsEnd        bool
+	Distance     uint32
+	IsVisited    bool
+	IsWall       bool
+	PreviousNode *Node
+	GridId       uint8
+	NoOfVisits   uint8
+	H, F         float32
 }
 
 type Maze struct {
@@ -82,7 +78,7 @@ func (m *Maze) getCell(x, y int) *Cell {
 	return &m.Grid[y][x]
 }
 
-func (m *Maze) getNeighbors(cell *Cell) *Cell {
+func (m *Maze) getNeighbors(cell *Cell) []*Cell {
 	var neighbors []*Cell
 
 	top := m.getCell(int(cell.X), int(cell.Y)-2)
@@ -103,26 +99,7 @@ func (m *Maze) getNeighbors(cell *Cell) *Cell {
 		neighbors = append(neighbors, left)
 	}
 
-	if len(neighbors) > 0 {
-		if rand.Float64() < 0.75 {
-			return neighbors[rand.Intn(len(neighbors))]
-		}
-
-		var maxDistance float64
-		var farthestCell *Cell
-
-		for _, neighbor := range neighbors {
-			distance := math.Hypot(float64(neighbor.X-m.Start.X), float64(neighbor.Y-m.Start.Y))
-			if distance > maxDistance {
-				maxDistance = distance
-				farthestCell = neighbor
-			}
-		}
-
-		return farthestCell
-	}
-
-	return nil
+	return neighbors
 }
 
 func (m *Maze) generateMazeNotGlobal() {
@@ -130,14 +107,19 @@ func (m *Maze) generateMazeNotGlobal() {
 	nextCell := m.getNeighbors(m.CurrentCell)
 
 	if nextCell != nil {
-		nextCell.Visited = true
+		nextCellCell := nextCell[rand.Intn(len(nextCell))] // Choose a random neighbor
+		nextCellCell.Visited = true
 		m.Stack = append(m.Stack, m.CurrentCell)
 
-		wallX := (m.CurrentCell.X + nextCell.X) / 2
-		wallY := (m.CurrentCell.Y + nextCell.Y) / 2
-		m.Grid[wallY][wallX].IsWall = false
+		// Calculate the wall position correctly
+		wallX := (int(m.CurrentCell.X) + int(nextCellCell.X)) / 2
+		wallY := (int(m.CurrentCell.Y) + int(nextCellCell.Y)) / 2
 
-		m.CurrentCell = nextCell
+		if wallX >= 0 && wallX < m.Width && wallY >= 0 && wallY < m.Height {
+			m.Grid[wallY][wallX].IsWall = false
+		}
+
+		m.CurrentCell = nextCellCell
 	} else if len(m.Stack) > 0 {
 		if rand.Float64() < 0.4 {
 			backtrackCell := m.Stack[rand.Intn(len(m.Stack))]
@@ -149,43 +131,42 @@ func (m *Maze) generateMazeNotGlobal() {
 	}
 }
 
-var nodeIndex uint16 = 1
-
 func createNode(x, y uint16, isWall bool, start, end *Cell, gridId uint8) Node {
-	node := Node{
-		X:                 x,
-		Y:                 y,
-		IsStart:           start != nil && x == start.X && y == start.Y,
-		IsEnd:             end != nil && x == end.X && y == end.Y,
-		Distance:          math.MaxUint32,
-		IsVisited:         false,
-		IsWall:            isWall,
-		PreviousNode:      nil,
-		GridId:            gridId,
-		Index:             nodeIndex,
-		PreviousNodeIndex: 0,
+	return Node{
+		X:            x,
+		Y:            y,
+		IsStart:      start != nil && x == start.X && y == start.Y,
+		IsEnd:        end != nil && x == end.X && y == end.Y,
+		Distance:     math.MaxUint32,
+		IsVisited:    false,
+		IsWall:       isWall,
+		PreviousNode: nil,
+		GridId:       gridId,
 	}
-	nodeIndex++
-	return node
 }
 
 func GenerateMaze(numRows, numCols int, singlePath bool) map[string]interface{} {
 	s := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(s)
-	maze := NewMaze(numRows, numCols)
+	maze := NewMaze(numCols, numRows) // Note: numCols is width, numRows is height
 
+	// Generate maze with the current implementation
 	for len(maze.Stack) > 0 || !maze.CurrentCell.Visited {
 		maze.generateMazeNotGlobal()
 	}
 
+	// Add extra paths if not single path
 	if !singlePath {
 		for i := 0; i < numRows*numCols/10; i++ {
-			x := r.Intn(numRows-2) + 1
-			y := r.Intn(numCols-2) + 1
-			maze.Grid[x][y].IsWall = false
+			x := r.Intn(numCols)
+			y := r.Intn(numRows)
+			if x > 0 && x < numCols-1 && y > 0 && y < numRows-1 {
+				maze.Grid[y][x].IsWall = false
+			}
 		}
 	}
 
+	// Generate grids for different algorithms
 	grids := make(map[int][][]Node, 5)
 	for i := 1; i <= 5; i++ {
 		grid := make([][]Node, len(maze.Grid))
@@ -198,21 +179,22 @@ func GenerateMaze(numRows, numCols int, singlePath bool) map[string]interface{} 
 		grids[i] = grid
 	}
 
+	// Return maze data for different algorithms
 	return map[string]interface{}{
 		"gridDijkstra":              grids[1],
 		"gridAstar":                 grids[2],
 		"gridBFS":                   grids[3],
 		"gridDFS":                   grids[4],
 		"gridWallFollower":          grids[5],
-		"gridDijkstraStartNode":     grids[1][maze.Start.Y][maze.Start.X],
-		"gridDijkstraEndNode":       grids[1][maze.End.Y][maze.End.X],
-		"gridAstarStartNode":        grids[2][maze.Start.Y][maze.Start.X],
-		"gridAstarEndNode":          grids[2][maze.End.Y][maze.End.X],
-		"gridBFSStartNode":          grids[3][maze.Start.Y][maze.Start.X],
-		"gridBFSEndNode":            grids[3][maze.End.Y][maze.End.X],
-		"gridDFSStartNode":          grids[4][maze.Start.Y][maze.Start.X],
-		"gridDFSEndNode":            grids[4][maze.End.Y][maze.End.X],
-		"gridWallFollowerStartNode": grids[5][maze.Start.Y][maze.Start.X],
-		"gridWallFollowerEndNode":   grids[5][maze.End.Y][maze.End.X],
+		"gridDijkstraStartNode":     &grids[1][maze.Start.Y][maze.Start.X],
+		"gridDijkstraEndNode":       &grids[1][maze.End.Y][maze.End.X],
+		"gridAstarStartNode":        &grids[2][maze.Start.Y][maze.Start.X],
+		"gridAstarEndNode":          &grids[2][maze.End.Y][maze.End.X],
+		"gridBFSStartNode":          &grids[3][maze.Start.Y][maze.Start.X],
+		"gridBFSEndNode":            &grids[3][maze.End.Y][maze.End.X],
+		"gridDFSStartNode":          &grids[4][maze.Start.Y][maze.Start.X],
+		"gridDFSEndNode":            &grids[4][maze.End.Y][maze.End.X],
+		"gridWallFollowerStartNode": &grids[5][maze.Start.Y][maze.Start.X],
+		"gridWallFollowerEndNode":   &grids[5][maze.End.Y][maze.End.X],
 	}
 }

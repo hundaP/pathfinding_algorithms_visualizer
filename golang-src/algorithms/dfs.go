@@ -32,7 +32,6 @@ func DFSAlgorithm(grid [][]maze.Node, startNode, endNode *maze.Node) []maze.Node
 		for _, neighbor := range unvisitedNeighbors {
 			neighbor.Distance = currentNode.Distance + 1
 			neighbor.PreviousNode = currentNode
-			neighbor.PreviousNodeIndex = currentNode.Index
 			stack = append(stack, neighbor)
 		}
 	}

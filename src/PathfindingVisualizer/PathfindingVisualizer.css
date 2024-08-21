@@ -2,14 +2,36 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-}
-
-.grid{
+  }
+  
+  .grid {
     margin: 100px 20px 0;
-}
-.grid > div{
+  }
+  
+  .grid > div {
     margin-top: -10px;
-}
-h1, p{
+  }
+  
+  h1,
+  p {
     color: white;
-}
+  }
+  
+  .metrics-table {
+    width: 80%;
+    border-collapse: collapse;
+    font-size: 16px;
+    text-align: center;
+    margin: 20px auto;
+    color: white;
+  }
+  
+  .metrics-table th,
+  .metrics-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .metrics-table th {
+    background-color: #4b8f8c;
+  }

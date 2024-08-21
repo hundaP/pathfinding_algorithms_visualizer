@@ -1,6 +1,6 @@
 package algorithms
 
-import "server/maze"
+import "pathfinding_algorithms_test_runner/maze"
 
 // WallFollowerAlgorithm performs the wall follower algorithm on the grid
 func WallFollowerAlgorithm(grid [][]maze.Node, startNode, endNode *maze.Node) []maze.Node {
@@ -27,20 +27,12 @@ func WallFollowerAlgorithm(grid [][]maze.Node, startNode, endNode *maze.Node) []
 		if nextNode != nil {
 			nextNode.Distance = currentNode.Distance + 1
 			nextNode.PreviousNode = currentNode
-
-			nextNode.PreviousNodeIndex = currentNode.Index // Set PreviousNodeIndex
-
 			previousNode = currentNode
 			currentNode = nextNode
 		} else {
 			if previousNode != nil {
 				currentNode = previousNode
 				previousNode = currentNode.PreviousNode
-
-				// Update PreviousNodeIndex during backtracking
-				if previousNode != nil {
-					currentNode.PreviousNodeIndex = previousNode.Index
-				}
 			} else {
 				break
 			}

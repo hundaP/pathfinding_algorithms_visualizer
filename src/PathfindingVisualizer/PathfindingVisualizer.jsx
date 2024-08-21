@@ -75,15 +75,14 @@ export default class PathfindingVisualizer extends Component {
         },
       });
 
+      // Ensure grid structure and node IDs are consistent
       this.setState({
         gridDijkstra: this.addNodeIds(response.data.grids.dijkstra, "dijkstra"),
         gridAstar: this.addNodeIds(response.data.grids.astar, "astar"),
         gridBfs: this.addNodeIds(response.data.grids.bfs, "bfs"),
         gridDfs: this.addNodeIds(response.data.grids.dfs, "dfs"),
-        gridWallFollower: this.addNodeIds(
-          response.data.grids.wallFollower,
-          "wallFollower",
-        ),
+        gridWallFollower: this.addNodeIds(response.data.grids.wallFollower, "wallFollower"),
+        // Start and end nodes
         gridDijkstraStartNode: response.data.startNodes.dijkstra || {},
         gridDijkstraEndNode: response.data.endNodes.dijkstra || {},
         gridAstarStartNode: response.data.startNodes.astar || {},
@@ -104,8 +103,8 @@ export default class PathfindingVisualizer extends Component {
     return grid.map((row) =>
       row.map((node) => ({
         ...node,
-        id: `grid${algorithmName}-node-${node.x}-${node.y}`,
-      })),
+        id: `grid${algorithmName}-node-${node.y}-${node.x}`,
+      }))
     );
   };
 
@@ -114,7 +113,7 @@ export default class PathfindingVisualizer extends Component {
       (prevState) => ({
         singlePath: !prevState.singlePath,
       }),
-      this.generateNewMaze,
+      this.generateNewMaze
     );
   };
 
@@ -122,7 +121,45 @@ export default class PathfindingVisualizer extends Component {
     this.setState({ mazeSize: newValue }, this.generateNewMaze);
   };
 
+  resetState = () => {
+    this.setState({
+      gridDijkstra: [],
+      gridAstar: [],
+      gridBfs: [],
+      gridDfs: [],
+      gridWallFollower: [],
+      startNode: null,
+      endNode: null,
+      dijkstraTime: 0,
+      dijkstraVisitedNodes: 0,
+      dijkstraVisitedPercentage: 0,
+      pathLengthDijkstra: 0,
+      astarTime: 0,
+      astarVisitedNodes: 0,
+      astarVisitedPercentage: 0,
+      pathLengthAstar: 0,
+      bfsTime: 0,
+      bfsVisitedNodes: 0,
+      bfsVisitedPercentage: 0,
+      pathLengthBfs: 0,
+      dfsTime: 0,
+      dfsVisitedNodes: 0,
+      dfsVisitedPercentage: 0,
+      pathLengthDfs: 0,
+      wallFollowerTime: 0,
+      wallFollowerVisitedNodes: 0,
+      wallFollowerVisitedPercentage: 0,
+      pathLengthWallFollower: 0,
+      dijkstraMemoryUsed: 0,
+      astarMemoryUsed: 0,
+      bfsMemoryUsed: 0,
+      dfsMemoryUsed: 0,
+      wallFollowerMemoryUsed: 0,
+    });
+  };
+
   generateNewMaze = () => {
+    this.resetState(); // Reset state before generating new maze
     this.fetchMazeData(); // Regenerate maze data
   };
 
@@ -131,15 +168,7 @@ export default class PathfindingVisualizer extends Component {
     const animate = () => {
       if (i < nodesInShortestPathOrder.length) {
         const node = nodesInShortestPathOrder[i];
-        const nodeId = `grid${node.gridId}-node-${node.x}-${node.y}`;
-        const nodeElement = document.getElementById(nodeId);
-
-        if (nodeElement) {
-          nodeElement.className = "node node-shortest-path";
-        } else {
-          console.error(`Node element not found for id: ${nodeId}`);
-        }
-
+        document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`).className = 'node node-shortest-path';
         i++;
         requestAnimationFrame(animate);
       }
@@ -153,31 +182,28 @@ export default class PathfindingVisualizer extends Component {
       const animate = () => {
         if (i < visitedNodesInOrder.length) {
           const node = visitedNodesInOrder[i];
-          const nodeId = `grid${node.gridId}-node-${node.x}-${node.y}`;
-          const nodeElement = document.getElementById(nodeId);
+          const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`);
 
           if (nodeElement) {
-            nodeElement.classList.add("node-visited");
+            // Use setTimeout to control animation speed
+            setTimeout(() => {
+              nodeElement.classList.add('node', 'node-visited');
 
-            if (
-              node.noOfVisits > 1 &&
-              visitedNodesInOrder[i + 1] &&
-              visitedNodesInOrder[i + 1].PreviousID &&
-              this.findNodeByID(grid, visitedNodesInOrder[i + 1].PreviousID)
-                .x === node.x &&
-              this.findNodeByID(grid, visitedNodesInOrder[i + 1].PreviousID)
-                .y === node.y
-            ) {
-              const hue = 174 + (node.noOfVisits - 1) * 10;
-              const lightness = 30 - (node.noOfVisits - 1) * 5;
-              nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
-            }
+              // Optional: Set background color based on visit count
+              if (node.noOfVisits > 1) {
+                const hue = 174 + (node.noOfVisits - 1) * 10;
+                const lightness = 30 - (node.noOfVisits - 1) * 5;
+                nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
+              }
+
+              i++;
+              animate(); // Continue to the next node
+            }, 10); // Adjust delay as needed
           } else {
-            console.error(`Node element not found for id: ${nodeId}`);
+            console.log(`Node not found: grid${node.gridId}-node-${node.y}-${node.x}`);
+            i++;
+            animate(); // Continue to the next node
           }
-
-          i++;
-          requestAnimationFrame(animate);
         } else {
           this.animateShortestPath(nodesInShortestPathOrder);
           resolve();
@@ -187,101 +213,66 @@ export default class PathfindingVisualizer extends Component {
     });
   }
 
-  findNodeByID(grid, id) {
-    for (const row of grid) {
-      for (const node of row) {
-        if (node.id === id) {
-          return node;
-        }
-      }
-    }
-    return null;
-  }
-
-  getNodesInShortestPathOrder(finishNode, grid) {
-    const nodesInShortestPathOrder = [];
-    let currentNode = finishNode;
-    while (currentNode !== null) {
-      nodesInShortestPathOrder.unshift(currentNode);
-      if (currentNode.PreviousID === 0) {
-        break;
-      }
-      currentNode = this.findNodeByID(
-        grid,
-        `grid${currentNode.gridId}-node-${currentNode.PreviousID.x}-${currentNode.PreviousID.y}`,
-      );
-    }
-    return nodesInShortestPathOrder;
-  }
-
   visualizeAlgorithms = async () => {
     try {
-        const response = await fetch("http://localhost:5000/api/solution", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
+      const response = await fetch("http://localhost:5000/api/solution", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const results = await response.json();
+
+      const algorithmPromises = Object.keys(results).map((algorithmName) => {
+        const algorithmResult = results[algorithmName];
+        if (!algorithmResult) {
+          console.error(`No result for algorithm: ${algorithmName}`);
+          return Promise.resolve();
+        }
+
+        const { visitedNodesInOrder, nodesInShortestPathOrder, metrics } = algorithmResult;
+        const capitalizedAlgName = algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1);
+
+        // Extract and convert time value
+        const rawTimeNs = metrics?.time?.[0];
+        let timeInMilliseconds = '0.00';
+
+        if (typeof rawTimeNs === 'number') {
+          timeInMilliseconds = (rawTimeNs / 1_000_000).toFixed(2);
+        }
+
+        // Extract and convert memoryUsed value
+        const rawMemoryUsed = metrics?.memoryUsed?.[0]; // Assuming metrics.memoryUsed is an array with one value
+        let memoryUsedInMB = '0.00';
+
+        if (typeof rawMemoryUsed === 'number') {
+          memoryUsedInMB = (rawMemoryUsed).toFixed(2); // Directly use rawMemoryUsed if it's in MB already
+        }
+
+        this.setState({
+          [`${algorithmName}Time`]: timeInMilliseconds,
+          [`${algorithmName}VisitedNodes`]: visitedNodesInOrder.length,
+          [`${algorithmName}VisitedPercentage`]:
+            (visitedNodesInOrder.length /
+              this.countNonWallNodes(this.state[`grid${capitalizedAlgName}`])) *
+            100,
+          [`pathLength${capitalizedAlgName}`]: nodesInShortestPathOrder.length,
+          [`${algorithmName}MemoryUsed`]: memoryUsedInMB,
         });
 
-        const results = await response.json();
+        return this.animateAlgorithm(
+          visitedNodesInOrder,
+          nodesInShortestPathOrder,
+          this.state[`grid${capitalizedAlgName}`]
+        );
+      });
 
-        const algorithmPromises = Object.keys(results).map((algorithmName) => {
-            const algorithmResult = results[algorithmName];
-            if (!algorithmResult) {
-                console.error(`No result for algorithm: ${algorithmName}`);
-                return Promise.resolve();
-            }
-
-            const { visitedNodesInOrder, nodesInShortestPathOrder, metrics } = algorithmResult;
-            const capitalizedAlgName = algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1);
-
-            // Extract and convert time value
-            const rawTimeNs = metrics?.time?.[0];
-            let timeInMilliseconds = '0.00';
-
-            if (typeof rawTimeNs === 'number') {
-                timeInMilliseconds = (rawTimeNs / 1_000_000).toFixed(2);
-            }
-
-            // Extract and convert memoryUsed value
-            const rawMemoryUsed = metrics?.memoryUsed?.[0]; // Assuming metrics.memoryUsed is an array with one value
-            let memoryUsedInMB = '0.00';
-
-            if (typeof rawMemoryUsed === 'number') {
-                memoryUsedInMB = (rawMemoryUsed).toFixed(2); // Directly use rawMemoryUsed if it's in MB already
-            }
-
-            // Debugging info
-            console.log(`Algorithm: ${algorithmName}`);
-            console.log(`Raw time (ns): ${rawTimeNs}`);
-            console.log(`Converted time (ms): ${timeInMilliseconds}`);
-            console.log(`Raw memory used: ${rawMemoryUsed}`);
-            console.log(`Converted memory used (MB): ${memoryUsedInMB}`);
-
-            this.setState({
-                [`${algorithmName}Time`]: timeInMilliseconds,
-                [`${algorithmName}VisitedNodes`]: visitedNodesInOrder.length,
-                [`${algorithmName}VisitedPercentage`]:
-                    (visitedNodesInOrder.length /
-                      this.countNonWallNodes(this.state[`grid${capitalizedAlgName}`])) *
-                    100,
-                [`pathLength${capitalizedAlgName}`]: nodesInShortestPathOrder.length,
-                [`${algorithmName}MemoryUsed`]: memoryUsedInMB,
-            });
-
-            return this.animateAlgorithm(
-                visitedNodesInOrder,
-                nodesInShortestPathOrder,
-                this.state[`grid${capitalizedAlgName}`]
-            );
-        });
-
-        await Promise.all(algorithmPromises);
+      await Promise.all(algorithmPromises);
     } catch (error) {
-        console.error("Error fetching algorithm solution:", error);
+      console.error("Error fetching algorithm solution:", error);
     }
-};
-
+  };
 
   countNonWallNodes(grid) {
     const totalNodes = grid.length * grid[0].length;
@@ -331,59 +322,59 @@ export default class PathfindingVisualizer extends Component {
         </div>
 
         <table className="metrics-table">
-  <thead>
-    <tr>
-      <th>Algorithm</th>
-      <th>Time (ms)</th>
-      <th>Visited Cells</th>
-      <th>Visited Percentage (%)</th>
-      <th>Path Length</th>
-      <th>Memory Used (MB)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Dijkstra</td>
-      <td>{this.state.dijkstraTime}</td>
-      <td>{this.state.dijkstraVisitedNodes}</td>
-      <td>{this.state.dijkstraVisitedPercentage.toFixed(2)}</td>
-      <td>{this.state.pathLengthDijkstra}</td>
-      <td>{this.state.dijkstraMemoryUsed}</td>
-    </tr>
-    <tr>
-      <td>A*</td>
-      <td>{this.state.astarTime}</td>
-      <td>{this.state.astarVisitedNodes}</td>
-      <td>{this.state.astarVisitedPercentage.toFixed(2)}</td>
-      <td>{this.state.pathLengthAstar}</td>
-      <td>{this.state.astarMemoryUsed}</td>
-    </tr>
-    <tr>
-      <td>BFS</td>
-      <td>{this.state.bfsTime}</td>
-      <td>{this.state.bfsVisitedNodes}</td>
-      <td>{this.state.bfsVisitedPercentage.toFixed(2)}</td>
-      <td>{this.state.pathLengthBfs}</td>
-      <td>{this.state.bfsMemoryUsed}</td>
-    </tr>
-    <tr>
-      <td>DFS</td>
-      <td>{this.state.dfsTime}</td>
-      <td>{this.state.dfsVisitedNodes}</td>
-      <td>{this.state.dfsVisitedPercentage.toFixed(2)}</td>
-      <td>{this.state.pathLengthDfs}</td>
-      <td>{this.state.dfsMemoryUsed}</td>
-    </tr>
-    <tr>
-      <td>Wall Follower</td>
-      <td>{this.state.wallFollowerTime}</td>
-      <td>{this.state.wallFollowerVisitedNodes}</td>
-      <td>{this.state.wallFollowerVisitedPercentage.toFixed(2)}</td>
-      <td>{this.state.pathLengthWallFollower}</td>
-      <td>{this.state.wallFollowerMemoryUsed}</td>
-    </tr>
-  </tbody>
-</table>
+          <thead>
+            <tr>
+              <th>Algorithm</th>
+              <th>Time (ms)</th>
+              <th>Visited Cells</th>
+              <th>Visited Percentage (%)</th>
+              <th>Path Length</th>
+              <th>Memory Used (MB)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dijkstra</td>
+              <td>{this.state.dijkstraTime}</td>
+              <td>{this.state.dijkstraVisitedNodes}</td>
+              <td>{this.state.dijkstraVisitedPercentage.toFixed(2)}</td>
+              <td>{this.state.pathLengthDijkstra}</td>
+              <td>{this.state.dijkstraMemoryUsed}</td>
+            </tr>
+            <tr>
+              <td>A*</td>
+              <td>{this.state.astarTime}</td>
+              <td>{this.state.astarVisitedNodes}</td>
+              <td>{this.state.astarVisitedPercentage.toFixed(2)}</td>
+              <td>{this.state.pathLengthAstar}</td>
+              <td>{this.state.astarMemoryUsed}</td>
+            </tr>
+            <tr>
+              <td>BFS</td>
+              <td>{this.state.bfsTime}</td>
+              <td>{this.state.bfsVisitedNodes}</td>
+              <td>{this.state.bfsVisitedPercentage.toFixed(2)}</td>
+              <td>{this.state.pathLengthBfs}</td>
+              <td>{this.state.bfsMemoryUsed}</td>
+            </tr>
+            <tr>
+              <td>DFS</td>
+              <td>{this.state.dfsTime}</td>
+              <td>{this.state.dfsVisitedNodes}</td>
+              <td>{this.state.dfsVisitedPercentage.toFixed(2)}</td>
+              <td>{this.state.pathLengthDfs}</td>
+              <td>{this.state.dfsMemoryUsed}</td>
+            </tr>
+            <tr>
+              <td>Wall Follower</td>
+              <td>{this.state.wallFollowerTime}</td>
+              <td>{this.state.wallFollowerVisitedNodes}</td>
+              <td>{this.state.wallFollowerVisitedPercentage.toFixed(2)}</td>
+              <td>{this.state.pathLengthWallFollower}</td>
+              <td>{this.state.wallFollowerMemoryUsed}</td>
+            </tr>
+          </tbody>
+        </table>
 
         <div className="grid-container">
           {algorithmNames.map((algorithmName) => {

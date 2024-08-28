@@ -64,10 +64,10 @@ class Cell {
 
 class Maze {
   constructor(width, height) {
-    if (width % 2 ==0 ){
+    if (width % 2 ===0 ){
       width++;
     }
-    if (height % 2 == 0){
+    if (height % 2 === 0){
       height++;
     }
     this.width = width

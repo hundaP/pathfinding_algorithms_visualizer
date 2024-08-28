@@ -6,18 +6,12 @@ import Slider from "@mui/material/Slider";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
 
-import { dijkstra } from "../Algorithms/dijkstra";
-import { astar } from "../Algorithms/astar";
-import { bfs } from "../Algorithms/bfs";
-import { dfs } from "../Algorithms/dfs";
-import { wallFollower } from "../Algorithms/wall_follower";
-
 const algorithms = {
-  dijkstra,
-  astar,
-  bfs,
-  dfs,
-  wallFollower,
+  dijkstra: "dijkstra",
+  astar: "astar",
+  bfs: "bfs",
+  dfs: "dfs",
+  wallFollower: "wallFollower",
 };
 
 export default class PathfindingVisualizer extends Component {
@@ -33,7 +27,7 @@ export default class PathfindingVisualizer extends Component {
       endNode: null,
       singlePath: true,
       isSolving: false,
-      mazeSize: 10, // Default size
+      mazeSize: 30, // Default size
       dijkstraTime: 0,
       dijkstraVisitedNodes: 0,
       dijkstraVisitedPercentage: 0,

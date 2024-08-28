@@ -74,6 +74,8 @@ function getPrioritizedNeighbors(node, grid, direction) {
             if (col > 0) neighbors.push(grid[row][col - 1]); // Left
             if (row > 0) neighbors.push(grid[row - 1][col]); // Up
             break;
+        default:
+            break;
     }
 
     return neighbors;

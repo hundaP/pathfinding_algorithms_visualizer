@@ -33,7 +33,6 @@ export function generateMaze(numRows, numCols, singlePath) {
   let gridWallFollowerStartNode = grid5[maze.start.y][maze.start.x];
   let gridWallFollowerEndNode = grid5[maze.end.y][maze.end.x];
 
-
   return {
     gridDijsktra: grid1,
     gridAstar: grid2,
@@ -64,14 +63,15 @@ class Cell {
 
 class Maze {
   constructor(width, height) {
-    if (width % 2 ===0 ){
+    // Increase dimensions by 1 if they're even
+    if (width % 2 === 0) {
       width++;
     }
-    if (height % 2 === 0){
+    if (height % 2 === 0) {
       height++;
     }
-    this.width = width
-    this.height = height
+    this.width = width;
+    this.height = height;
     this.grid = [];
     this.stack = [];
 
@@ -84,9 +84,23 @@ class Maze {
       this.grid.push(row);
     }
 
-    this.currentCell = this.grid[1][1]; // Start at the top-left corner
-    this.start = this.grid[1][1]; // Top-left corner
-    this.end = this.grid[this.height - 2][this.width - 2]; // Bottom-right corner
+    // Set start and end cells
+    let startY = Math.floor(height / 2);
+    if (startY % 2 === 0) {
+      startY--;
+    }
+    let endY = Math.floor(height / 2);
+    if (endY % 2 === 0) {
+      endY--;
+    }
+
+    this.currentCell = this.grid[startY][1];
+    this.start = this.grid[startY][1];
+    this.end = this.grid[endY][width - 2];
+
+    // Ensure start and end cells are not walls
+    this.grid[startY][1].isWall = false;
+    this.grid[endY][width - 2].isWall = false;
   }
 
   getCell(x, y) {
@@ -156,7 +170,6 @@ class Maze {
       }
     }
   }
-
 }
 
 function createNode(col, row, isWall, startNode, endNode, gridId) {

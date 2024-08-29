@@ -5,6 +5,7 @@ import Switch from "@mui/material/Switch";
 import Slider from "@mui/material/Slider";
 import Typography from "@mui/material/Typography";
 import axios from "axios";
+import pako from 'pako';
 
 const algorithms = {
   dijkstra: "dijkstra",
@@ -209,63 +210,86 @@ export default class PathfindingVisualizer extends Component {
 
   visualizeAlgorithms = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/solution", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const results = await response.json();
-
-      const algorithmPromises = Object.keys(results).map((algorithmName) => {
-        const algorithmResult = results[algorithmName];
+      console.log("Fetching solution data...");
+      const response = await fetch(`http://localhost:5000/api/solution`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const { compressedData } = await response.json();
+      console.log("Compressed data received, length:", compressedData.length);
+  
+      const decompressedData = this.decompressData(compressedData);
+      console.log("Data decompressed successfully");
+  
+      const results = JSON.parse(decompressedData);
+      console.log("JSON parsed successfully");
+  
+      // Prepare state updates for all algorithms
+      const stateUpdates = {};
+      const animationPromises = [];
+  
+      for (const [algorithmName, algorithmResult] of Object.entries(results)) {
         if (!algorithmResult) {
           console.error(`No result for algorithm: ${algorithmName}`);
-          return Promise.resolve();
+          continue;
         }
-
+  
         const { visitedNodesInOrder, nodesInShortestPathOrder, metrics } = algorithmResult;
         const capitalizedAlgName = algorithmName.charAt(0).toUpperCase() + algorithmName.slice(1);
-
-        // Extract and convert time value
-        const rawTimeNs = metrics?.time?.[0];
-        let timeInMilliseconds = '0.00';
-
-        if (typeof rawTimeNs === 'number') {
-          timeInMilliseconds = (rawTimeNs / 1_000_000).toFixed(2);
-        }
-
-        // Extract and convert memoryUsed value
-        const rawMemoryUsed = metrics?.memoryUsed?.[0]; // Assuming metrics.memoryUsed is an array with one value
-        let memoryUsedInMB = '0.00';
-
-        if (typeof rawMemoryUsed === 'number') {
-          memoryUsedInMB = (rawMemoryUsed).toFixed(2); // Directly use rawMemoryUsed if it's in MB already
-        }
-
-        this.setState({
-          [`${algorithmName}Time`]: timeInMilliseconds,
-          [`${algorithmName}VisitedNodes`]: visitedNodesInOrder.length,
-          [`${algorithmName}VisitedPercentage`]:
-            (visitedNodesInOrder.length /
-              this.countNonWallNodes(this.state[`grid${capitalizedAlgName}`])) *
-            100,
-          [`pathLength${capitalizedAlgName}`]: nodesInShortestPathOrder.length,
-          [`${algorithmName}MemoryUsed`]: memoryUsedInMB,
-        });
-
-        return this.animateAlgorithm(
-          visitedNodesInOrder,
-          nodesInShortestPathOrder,
-          this.state[`grid${capitalizedAlgName}`]
+  
+        console.log(`Preparing updates for ${algorithmName}:`, metrics);
+        
+        // Safely access metric values
+        const getMetricValue = (metricName) => {
+          const value = metrics[metricName];
+          return Array.isArray(value) ? value[0] : value;
+        };
+  
+        stateUpdates[`${algorithmName}Time`] = getMetricValue('time') / 1_000_000;
+        stateUpdates[`${algorithmName}VisitedNodes`] = getMetricValue('visitedNodes');
+        stateUpdates[`${algorithmName}VisitedPercentage`] = getMetricValue('visitedPercentage');
+        stateUpdates[`pathLength${capitalizedAlgName}`] = getMetricValue('pathLength');
+        stateUpdates[`${algorithmName}MemoryUsed`] = parseFloat(getMetricValue('memoryUsed')).toFixed(2);
+  
+        // Prepare animation promise
+        animationPromises.push(
+          this.animateAlgorithm(
+            this.decompressNodeList(visitedNodesInOrder, this.state[`grid${capitalizedAlgName}`]),
+            this.decompressNodeList(nodesInShortestPathOrder, this.state[`grid${capitalizedAlgName}`]),
+            this.state[`grid${capitalizedAlgName}`]
+          )
         );
-      });
-
-      await Promise.all(algorithmPromises);
+      }
+  
+      // Update state for all algorithms at once
+      this.setState(stateUpdates);
+  
+      // Start all animations simultaneously
+      console.log("Starting animations for all algorithms");
+      await Promise.all(animationPromises);
+      console.log("All animations completed");
+  
     } catch (error) {
-      console.error("Error fetching algorithm solution:", error);
+      console.error("Error in visualizeAlgorithms:", error);
+      console.error("Error details:", error.message);
     }
+  };
+  
+  decompressData = (compressedData) => {
+    const binaryString = atob(compressedData);
+    const charData = binaryString.split('').map(x => x.charCodeAt(0));
+    const binData = new Uint8Array(charData);
+    const data = pako.inflate(binData);
+    return new TextDecoder().decode(data);
+  };
+  
+  decompressNodeList = (compressedList, grid) => {
+    return compressedList.map(([x, y, noOfVisits]) => {
+      const node = grid[y][x];
+      return { ...node, noOfVisits: noOfVisits || 1 };
+    });
   };
 
   countNonWallNodes(grid) {
@@ -380,7 +404,7 @@ export default class PathfindingVisualizer extends Component {
 
             return (
               <div className="grid" key={algorithmName}>
-                <h1>{algorithms[algorithmName].name} algorithm</h1>
+                <h1>{algorithms[algorithmName]} algorithm</h1>
                 {grid.map((row, rowIndex) => (
                   <div key={rowIndex}>
                     {row.map((node, nodeIndex) => {

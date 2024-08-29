@@ -28,7 +28,7 @@ export default class PathfindingVisualizer extends Component {
       endNode: null,
       singlePath: true,
       isSolving: false,
-      mazeSize: 30, // Default size
+      mazeSize: 31, // Default size
       dijkstraTime: 0,
       dijkstraVisitedNodes: 0,
       dijkstraVisitedPercentage: 0,
@@ -104,16 +104,20 @@ export default class PathfindingVisualizer extends Component {
   };
 
   handleSinglePathChange = () => {
-    this.setState(
-      (prevState) => ({
-        singlePath: !prevState.singlePath,
-      }),
-      this.generateNewMaze
-    );
+    if (!this.state.isSolving) {
+      this.setState(
+        (prevState) => ({
+          singlePath: !prevState.singlePath,
+        }),
+        this.generateNewMaze
+      );
+    }
   };
-
+  
   handleMazeSizeChange = (event, newValue) => {
-    this.setState({ mazeSize: newValue }, this.generateNewMaze);
+    if (!this.state.isSolving) {
+      this.setState({ mazeSize: newValue }, this.generateNewMaze);
+    }
   };
 
   resetState = () => {
@@ -159,16 +163,20 @@ export default class PathfindingVisualizer extends Component {
   };
 
   animateShortestPath(nodesInShortestPathOrder) {
-    let i = 0;
-    const animate = () => {
-      if (i < nodesInShortestPathOrder.length) {
-        const node = nodesInShortestPathOrder[i];
-        document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`).className = 'node node-shortest-path';
-        i++;
-        requestAnimationFrame(animate);
-      }
-    };
-    animate();
+    return new Promise((resolve) => {
+      let i = 0;
+      const animate = () => {
+        if (i < nodesInShortestPathOrder.length) {
+          const node = nodesInShortestPathOrder[i];
+          document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`).className = 'node node-shortest-path';
+          i++;
+          requestAnimationFrame(animate);
+        } else {
+          resolve();
+        }
+      };
+      animate();
+    });
   }
 
   animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, grid) {
@@ -178,19 +186,19 @@ export default class PathfindingVisualizer extends Component {
         if (i < visitedNodesInOrder.length) {
           const node = visitedNodesInOrder[i];
           const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`);
-
+  
           if (nodeElement) {
             // Use setTimeout to control animation speed
             setTimeout(() => {
               nodeElement.classList.add('node', 'node-visited');
-
+  
               // Optional: Set background color based on visit count
               if (node.noOfVisits > 1) {
                 const hue = 174 + (node.noOfVisits - 1) * 10;
                 const lightness = 30 - (node.noOfVisits - 1) * 5;
                 nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
               }
-
+  
               i++;
               animate(); // Continue to the next node
             }, 10); // Adjust delay as needed
@@ -200,8 +208,7 @@ export default class PathfindingVisualizer extends Component {
             animate(); // Continue to the next node
           }
         } else {
-          this.animateShortestPath(nodesInShortestPathOrder);
-          resolve();
+          this.animateShortestPath(nodesInShortestPathOrder).then(resolve);
         }
       };
       animate();
@@ -314,15 +321,18 @@ export default class PathfindingVisualizer extends Component {
         <button onClick={this.solve} disabled={this.state.isSolving}>
           Solve
         </button>
-        <button onClick={this.generateNewMaze}>Generate Maze</button>
-
+        <button onClick={this.generateNewMaze} disabled={this.state.isSolving}>
+          Generate Maze
+        </button>
+    
         <Switch
           checked={this.state.singlePath}
           onChange={this.handleSinglePathChange}
           color="primary"
+          disabled={this.state.isSolving}
         />
         <label>Single Path</label>
-
+    
         <div style={{ width: "300px", margin: "20px auto" }}>
           <Typography id="maze-size-slider" gutterBottom>
             Maze Size: {this.state.mazeSize}x{this.state.mazeSize}
@@ -334,8 +344,9 @@ export default class PathfindingVisualizer extends Component {
             valueLabelDisplay="auto"
             step={10}
             marks
-            min={10}
-            max={100}
+            min={11}
+            max={101}
+            disabled={this.state.isSolving}
           />
         </div>
 

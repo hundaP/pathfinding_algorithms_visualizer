@@ -41,7 +41,7 @@ export default class PathfindingVisualizer extends Component {
       endNode: null,
       singlePath: true,
       isSolving: false,
-      mazeSize: 30, // Default size
+      mazeSize: 31, // Default size
       dijkstraTime: 0,
       dijkstraVisitedNodes: 0,
       dijkstraVisitedPercentage: 0,
@@ -316,8 +316,8 @@ export default class PathfindingVisualizer extends Component {
             valueLabelDisplay="auto"
             step={10}
             marks
-            min={10}
-            max={100}
+            min={11}
+            max={101}
           />
         </div>
   

@@ -169,13 +169,13 @@ export default class PathfindingVisualizer extends Component {
     this.setState(initialGrid); // Update state with the new grid and nodes
   };
 
-  animateShortestPath(nodesInShortestPathOrder) {
-    return new Promise((resolve) => {
+ animateShortestPath(nodesInShortestPathOrder) {
+    return new Promise(resolve => {
       let i = 0;
       const animate = () => {
         if (i < nodesInShortestPathOrder.length) {
           const node = nodesInShortestPathOrder[i];
-          document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`).className = 'node node-shortest-path';
+          document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`).className = 'node node-shortest-path';
           i++;
           requestAnimationFrame(animate);
         } else {
@@ -186,34 +186,21 @@ export default class PathfindingVisualizer extends Component {
     });
   }
 
-  animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder, grid) {
-    return new Promise((resolve) => {
+  animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder) {
+    return new Promise(resolve => {
       let i = 0;
       const animate = () => {
         if (i < visitedNodesInOrder.length) {
           const node = visitedNodesInOrder[i];
-          const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.y}-${node.x}`);
-  
-          if (nodeElement) {
-            // Use setTimeout to control animation speed
-            setTimeout(() => {
-              nodeElement.classList.add('node', 'node-visited');
-  
-              // Optional: Set background color based on visit count
-              if (node.noOfVisits > 1) {
-                const hue = 174 + (node.noOfVisits - 1) * 10;
-                const lightness = 30 - (node.noOfVisits - 1) * 5;
-                nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
-              }
-  
-              i++;
-              animate(); // Continue to the next node
-            }, 10); // Adjust delay as needed
-          } else {
-            console.log(`Node not found: grid${node.gridId}-node-${node.y}-${node.x}`);
-            i++;
-            animate(); // Continue to the next node
+          const nodeElement = document.getElementById(`grid${node.gridId}-node-${node.row}-${node.col}`);
+          nodeElement.classList.add('node', 'node-visited');
+          if (node.noOfVisits > 1 && visitedNodesInOrder[i + 1] === node.previousNode) {
+            const hue = 174 + (node.noOfVisits - 1) * 10;
+            const lightness = 30 - (node.noOfVisits - 1) * 5;
+            nodeElement.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
           }
+          i++;
+          requestAnimationFrame(animate);
         } else {
           this.animateShortestPath(nodesInShortestPathOrder).then(resolve);
         }
@@ -300,16 +287,20 @@ export default class PathfindingVisualizer extends Component {
   solve = async () => {
     this.setState({ isSolving: true });
     const algorithmNames = Object.keys(algorithms);
-    await Promise.all(algorithmNames.map(name => this.visualizeAlgorithm(name)));
-    this.setState({ isSolving: false }, () => {
-      algorithmNames.forEach(name => {
+    try {
+      await Promise.all(algorithmNames.map(name => this.visualizeAlgorithm(name)));
+      const animationPromises = algorithmNames.map(name => {
         const visitedNodesInOrder = this.state[`${name}VisitedNodesInOrder`];
         const nodesInShortestPathOrder = this.state[`${name}NodesInShortestPathOrder`];
         if (visitedNodesInOrder && nodesInShortestPathOrder) {
-          this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
+          return this.animateAlgorithm(visitedNodesInOrder, nodesInShortestPathOrder);
         }
+        return Promise.resolve();
       });
-    });
+      await Promise.all(animationPromises);
+    } finally {
+      this.setState({ isSolving: false });
+    }
   }
 
   render() {

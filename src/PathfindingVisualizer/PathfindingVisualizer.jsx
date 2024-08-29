@@ -63,7 +63,7 @@ export default class PathfindingVisualizer extends Component {
 
     fetchMazeData = async () => {
         try {
-            const response = await axios.get("https://www.hundap.xyz/api/maze", {
+            const response = await axios.get("https://hundap.xyz/api/maze", {
                 params: {
                     mazeSize: this.state.mazeSize,
                     singlePath: this.state.singlePath,
@@ -227,7 +227,7 @@ export default class PathfindingVisualizer extends Component {
     visualizeAlgorithms = async () => {
         try {
             console.log("Fetching solution data...");
-            const response = await fetch(`https://www.hundap.xyz/api/solution`);
+            const response = await fetch(`https://hundap.xyz/api/solution`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

@@ -63,7 +63,7 @@ export default class PathfindingVisualizer extends Component {
 
     fetchMazeData = async () => {
         try {
-            const response = await axios.get("https://hundap.xyz/api/maze", {
+            const response = await axios.get("http://localhost:5000/api/maze", {
                 params: {
                     mazeSize: this.state.mazeSize,
                     singlePath: this.state.singlePath,
@@ -227,7 +227,7 @@ export default class PathfindingVisualizer extends Component {
     visualizeAlgorithms = async () => {
         try {
             console.log("Fetching solution data...");
-            const response = await fetch(`https://hundap.xyz/api/solution`);
+            const response = await fetch(`http://localhost:5000/api/solution`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -373,59 +373,65 @@ export default class PathfindingVisualizer extends Component {
                 </div>
 
                 <table className="metrics-table">
-                    <thead>
-                        <tr>
-                            <th>Algorithm</th>
-                            <th>Time (ms)</th>
-                            <th>Visited Cells</th>
-                            <th>Visited Percentage (%)</th>
-                            <th>Path Length</th>
-                            <th>Memory Used (MB)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Dijkstra</td>
-                            <td>{this.state.dijkstraTime}</td>
-                            <td>{this.state.dijkstraVisitedNodes}</td>
-                            <td>{this.state.dijkstraVisitedPercentage.toFixed(2)}</td>
-                            <td>{this.state.pathLengthDijkstra}</td>
-                            <td>{this.state.dijkstraMemoryUsed}</td>
-                        </tr>
-                        <tr>
-                            <td>A*</td>
-                            <td>{this.state.astarTime}</td>
-                            <td>{this.state.astarVisitedNodes}</td>
-                            <td>{this.state.astarVisitedPercentage.toFixed(2)}</td>
-                            <td>{this.state.pathLengthAstar}</td>
-                            <td>{this.state.astarMemoryUsed}</td>
-                        </tr>
-                        <tr>
-                            <td>BFS</td>
-                            <td>{this.state.bfsTime}</td>
-                            <td>{this.state.bfsVisitedNodes}</td>
-                            <td>{this.state.bfsVisitedPercentage.toFixed(2)}</td>
-                            <td>{this.state.pathLengthBfs}</td>
-                            <td>{this.state.bfsMemoryUsed}</td>
-                        </tr>
-                        <tr>
-                            <td>DFS</td>
-                            <td>{this.state.dfsTime}</td>
-                            <td>{this.state.dfsVisitedNodes}</td>
-                            <td>{this.state.dfsVisitedPercentage.toFixed(2)}</td>
-                            <td>{this.state.pathLengthDfs}</td>
-                            <td>{this.state.dfsMemoryUsed}</td>
-                        </tr>
-                        <tr>
-                            <td>Wall Follower</td>
-                            <td>{this.state.wallFollowerTime}</td>
-                            <td>{this.state.wallFollowerVisitedNodes}</td>
-                            <td>{this.state.wallFollowerVisitedPercentage.toFixed(2)}</td>
-                            <td>{this.state.pathLengthWallFollower}</td>
-                            <td>{this.state.wallFollowerMemoryUsed}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Time (ms)</th>
+                        <th>Visited Cells</th>
+                        <th>Visited Percentage (%)</th>
+                        <th>Path Length</th>
+                        <th>Path Length Delta</th>
+                        <th>Memory Used (MB)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dijkstra</td>
+                        <td>{this.state.dijkstraTime}</td>
+                        <td>{this.state.dijkstraVisitedNodes}</td>
+                        <td>{this.state.dijkstraVisitedPercentage.toFixed(2)}</td>
+                        <td>{this.state.pathLengthDijkstra}</td>
+                        <td>0</td>
+                        <td>{this.state.dijkstraMemoryUsed}</td>
+                    </tr>
+                    <tr>
+                        <td>A*</td>
+                        <td>{this.state.astarTime}</td>
+                        <td>{this.state.astarVisitedNodes}</td>
+                        <td>{this.state.astarVisitedPercentage.toFixed(2)}</td>
+                        <td>{this.state.pathLengthAstar}</td>
+                        <td>{this.state.pathLengthAstar - this.state.pathLengthDijkstra}</td>
+                        <td>{this.state.astarMemoryUsed}</td>
+                    </tr>
+                    <tr>
+                        <td>BFS</td>
+                        <td>{this.state.bfsTime}</td>
+                        <td>{this.state.bfsVisitedNodes}</td>
+                        <td>{this.state.bfsVisitedPercentage.toFixed(2)}</td>
+                        <td>{this.state.pathLengthBfs}</td>
+                        <td>{this.state.pathLengthBfs - this.state.pathLengthDijkstra}</td>
+                        <td>{this.state.bfsMemoryUsed}</td>
+                    </tr>
+                    <tr>
+                        <td>DFS</td>
+                        <td>{this.state.dfsTime}</td>
+                        <td>{this.state.dfsVisitedNodes}</td>
+                        <td>{this.state.dfsVisitedPercentage.toFixed(2)}</td>
+                        <td>{this.state.pathLengthDfs}</td>
+                        <td>{this.state.pathLengthDfs - this.state.pathLengthDijkstra}</td>
+                        <td>{this.state.dfsMemoryUsed}</td>
+                    </tr>
+                    <tr>
+                        <td>Wall Follower</td>
+                        <td>{this.state.wallFollowerTime}</td>
+                        <td>{this.state.wallFollowerVisitedNodes}</td>
+                        <td>{this.state.wallFollowerVisitedPercentage.toFixed(2)}</td>
+                        <td>{this.state.pathLengthWallFollower}</td>
+                        <td>{this.state.pathLengthWallFollower - this.state.pathLengthDijkstra}</td>
+                        <td>{this.state.wallFollowerMemoryUsed}</td>
+                    </tr>
+                </tbody>
+            </table>
 
                 <div className="grid-container">
                     {algorithmNames.map((algorithmName) => {

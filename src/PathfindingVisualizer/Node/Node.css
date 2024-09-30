@@ -4,9 +4,16 @@
     border: 1px solid #484D6D;
     display: inline-block;
     box-sizing: border-box;
-
-
 }
+
+.node-sm {
+    width: 3.5px;
+    height: 3.5px;
+    border: 0.2px solid #484D6D;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
 .node-start {
     background-color: green;
 }

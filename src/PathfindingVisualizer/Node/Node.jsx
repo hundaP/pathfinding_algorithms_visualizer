@@ -3,7 +3,7 @@ import "./Node.css";
 
 export default class Node extends Component {
   render() {
-    const { col, row, isEnd, isStart, isWall, gridId } = this.props;
+    const { col, row, isEnd, isStart, isWall, gridId, length } = this.props;
     const extraClassName = isEnd
       ? "node-end"
       : isStart
@@ -11,10 +11,15 @@ export default class Node extends Component {
         : isWall
           ? "node-wall"
           : "";
+
+      
     return (
       <div
         id={`grid${gridId}-node-${row}-${col}`}
-        className={`node ${extraClassName}`}
+        className={[
+          length > 51 ? "node-sm" : "node",
+          extraClassName,
+        ].join(" ")}
       ></div>
     );
   }

@@ -82,5 +82,8 @@
     "npm-force-resolutions": "^0.0.10",
     "react-app-rewired": "^2.2.1",
     "workerize-loader": "^2.0.2"
+  },
+  "overrides": {
+    "picomatch": "^4.0.4"
   }
 }
